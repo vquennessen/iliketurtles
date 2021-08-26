@@ -1,2 +1,2 @@
-# PhD_Thesis
+# iliketurtles
 Scripts for PhD projects
