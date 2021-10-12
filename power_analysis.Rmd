@@ -1,0 +1,12 @@
+---
+title: "Power Analysis"
+author: "Vic Quennessen"
+date: "10/12/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Power analysis
