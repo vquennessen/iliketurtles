@@ -3,6 +3,8 @@
 
 # load libraries
 library(ggplot2)
+library(viridisLite)
+library(tidyverse)
 
 # define n() function to get length(unique)
 n <- function(x) {length(unique(x))}
@@ -56,10 +58,37 @@ for (i in 1:max_males) {
   
 }
 
+# color-blind friendly color palette
+colors <- viridis(max_males)
+
 # plot results
 ggplot(DF, aes(x = Sample_size, y = Proportion_correct, 
                col = as.factor(Males))) +
   geom_path(lwd = 1) +
-  labs(col = 'Number \n of Males')
+  labs(col = 'Number \n of Males') +
+  scale_color_manual(values = colors) 
+  
 
 # print table of minimum sample sizes for robust estimate
+cutoffs <- c(0.999, 0.99, 0.95, 0.9)
+DF2 <- tibble(Males = rep(1:max_males, each = length(cutoffs)), 
+                  Cutoff = rep(cutoffs, times = max_males), 
+                  Value = rep(NA, times = length(cutoffs)*max_males))
+
+# for each number of males
+for (i in 1:max_males) {
+  
+  # extract just values for number of males
+  MA <- subset(DF, Males == i)
+  
+  # for each cutoff value
+  for (j in 1:length(cutoffs)) {
+    index <- (i - 1)*length(cutoffs) + j
+    
+    DF2$Value[index] <- min(which(MA$Proportion_correct >= cutoffs[j]))
+  }
+}
+
+# print out table
+output <- pivot_wider(DF2, id_cols = Males, names_from = Cutoff, 
+                      values_from = Value)
