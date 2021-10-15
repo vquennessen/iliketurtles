@@ -15,7 +15,7 @@ library(ggplot2)
 library(viridisLite)
 library(tidyverse)
 library(lemon)
-knit_print.data.frame <- lemon_print
+library(knitr)
 ```
 
 ## Power analysis
@@ -23,13 +23,13 @@ knit_print.data.frame <- lemon_print
 Question 1: How many hatchlings should be sampled from a nest to robustly estimate the number of males that contributed to it?
 
 
-```{r}
+```{r, echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE}
 # define n() function to get length(unique)
 n <- function(x) {length(unique(x))}
 
 # population parameters
 n_eggs         <- 100    # number of eggs per nest
-max_hatchlings <- 100   # maximum number of hatchlings that can be sampled
+max_hatchlings <- 100    # maximum number of hatchlings that can be sampled
 max_males      <- 10     # maximum number of males females can mate with
 max_eggs       <- min(max_hatchlings, n_eggs) 
 
@@ -75,7 +75,11 @@ for (i in 1:max_males) {
   }
   
 }
+```
 
+
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
 # color-blind friendly color palette
 colors <- viridis(max_males)
 
@@ -85,7 +89,6 @@ ggplot(DF, aes(x = Sample_size, y = Proportion_correct,
   geom_path(lwd = 1) +
   labs(col = 'Number \n of Males') +
   scale_color_manual(values = colors) 
-
 ```
 
 How many hatchlings should be taken for each cutoff value?
@@ -93,28 +96,31 @@ How many hatchlings should be taken for each cutoff value?
 ```{r, render = lemon_print}
 # print table of minimum sample sizes for robust estimate
 cutoffs <- c(0.999, 0.99, 0.95, 0.9)
-DF2 <- tibble(Males = rep(1:max_males, each = length(cutoffs)), 
-              Cutoff = rep(cutoffs, times = max_males), 
-              Value = rep(NA, times = length(cutoffs)*max_males))
+DF2 <- tibble(Males = rep(paste(2:max_males, ' Males', sep = ''), 
+                          each = length(cutoffs)), 
+              Cutoff = rep(cutoffs, times = (max_males - 1)), 
+              Value = rep(NA, times = length(cutoffs)*(max_males - 1)))
 
 # for each number of males
-for (i in 1:max_males) {
+for (i in 2:max_males) {
   
   # extract just values for number of males
   MA <- subset(DF, Males == i)
   
   # for each cutoff value
   for (j in 1:length(cutoffs)) {
-    index <- (i - 1)*length(cutoffs) + j
+    index <- (i - 2)*length(cutoffs) + j
     
     DF2$Value[index] <- min(which(MA$Proportion_correct >= cutoffs[j]))
   }
 }
 
+# column names
+column_names <- paste(1:max_males, ' Males', sep = '')
+
 # print out table
-output <- pivot_wider(DF2, id_cols = Males, names_from = Cutoff, 
+output <- pivot_wider(DF2, id_cols = Cutoff, names_from = Males, 
                       values_from = Value)
 
-output <- as.data.frame(output)
-kable(output)
+knitr::kable(output, align = 'c', format = 'latex')
 ```
