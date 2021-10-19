@@ -2,7 +2,7 @@
 title: "Power Analysis"
 author: "Vic Quennessen"
 date: "10/12/2021"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,6 @@ knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 library(viridisLite)
 library(tidyverse)
-library(gt)
 ```
 
 ## Power analysis
@@ -195,5 +194,3 @@ output <- pivot_wider(DF2, id_cols = Cutoff, names_from = Males,
 
 knitr::kable(output, align = 'c')
 ```
-
-Question 2: 
