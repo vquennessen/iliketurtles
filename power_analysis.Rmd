@@ -199,35 +199,107 @@ knitr::kable(output, align = 'c')
 
 Question 2: How many females and nests should be sampled to get a robust estimate of the number of breeding males, and therefore the breeding sex ratio?
 
-```{r}
-minM <- 10  # minimum number of males in one breeding year
-maxM <- 100 # maximum number of males in one breeding year
-maxF <- 100 # maximum number of females in one breeding year
-Mprob <- rep(1/6, times = 6) # equal probability of mating with 0-5 males
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+# biological parameters
+max_n_males <- 5     # maximum number of males each female can mate with
+max_n_females <- 10  # maximum number of females each male can mate with
+minF <- 10           # minimum number of females sampled
+minM <- 10           # minimum number of males in one breeding year
+maxM <- 100          # maximum number of males in one breeding year
+maxF <- 200          # maximum number of females in one breeding year
+Mprob <- rep(1/max_n_males, times = max_n_males) # equal probability of mating with 1-5 males
 mating_mode <- 'polyamory' # options are 'polygyny' (males mate with multiple females but females mate with a single male) and 'polyamory' (both males and females have multiple partners)
 
-for (i in minM:maxM) {
+# model parameters
+nsims <- 100
+
+# dimensions
+sampM <- seq(from = minM, to = maxM, by = 10)
+nsampM <- length(sampM)
+sampF <- seq(from = minF, to = maxF, by = 10)
+nsampF <- length(sampF)
+
+# pre-allocate data frame for results
+DF <- data.frame(Number_of_males = rep(sampM, each = nsampF), 
+                 Sample_size = rep(sampF, times = nsampM), 
+                 Percent_identified = rep(NA, times = nsampF*nsampM))
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+# for each number of potential males
+for (m in 1:length(sampM)) {
+  
+  # pre-allocate vector of correct number of males identified
+  percent <- matrix(NA, nrow = nsims, ncol = nsampF)
+  
+  for (sim in 1:nsims) {
   
   # build pool of potential males to mate with
-  Mpool <- rep(1:maxM, times = maxF)
+  Mpool <- rep(1:sampM[m], times = max_n_females)
   
-  for (j in 50:maxF) {
+  # simulate breeding - create a matrix of males mated with
+  if (mating_mode == 'polygyny') {
     
-    # simulate breeding
-    if (mating_mode == 'polygyny') {
-      
-      mates <- sample(Mpool, size = j, replace = FALSE)
-      
-    } else if (mating_mode == 'polyamory') {
-      
-      for (k in 1:j) {
-         
-      }
-      
+    mates <- matrix(sample(Mpool, size = maxF, replace = FALSE), ncol = 1)
+    
+  } else if (mating_mode == 'polyamory') {
+    
+    # how many males does each female mate with
+    n_males <- sample(1:max_n_males, size = maxF, prob = Mprob, replace = TRUE)
+    
+    # initialize mates matrix
+    mates <- matrix(NA, nrow = maxF, ncol = max_n_males)
+    
+    # for each female, pull appropriate number of males from mating pool
+    for (i in 1:maxF) {
+      j <- n_males[i]
+      mates[i, ] <- c(sample(Mpool, size = j), rep(NA, max_n_males - j))
     }
     
   }
   
+  # identify total number of contributing males (correct value)
+  trueM <- length(unique(as.vector(mates)))
+  
+  # simulate sampling
+  
+  ## assuming perfect information
+  
+  # for each sample size of females, from 10 to total number of females nesting
+  for (f in 1:length(sampF)) {
+    
+    # sample females to get represented males 
+    sampled_males <- length(unique(as.vector(na.omit(mates[sample(1:maxF, size = sampF[f]), ]))))
+    
+    # determine percent of breeding males identified
+    percent[sim, f] <- (sampled_males / trueM)
+    
+  }
+  
+  ## assuming imperfect information
+  
+  }
+  
+  # add proportion of times the correct number of males was IDd by number of males and sample size
+  
+  # take mean of correct columns (sample sizes) to get proportion correct
+  percent_identified <- colMeans(percent, na.rm = TRUE)
+  
+  # calculate appropriate indices for DF
+  index_start <- (m - 1)*nsampF + 1
+  index_end <- index_start + nsampF - 1
+  
+  # store proportion correct values in DF
+  DF$Percent_identified[index_start:index_end] <- percent_identified
+  
 }
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+ggplot(data = DF, aes(x = Sample_size, 
+                      y = Number_of_males, 
+                      fill = Percent_identified)) +
+  geom_tile() +
+  scale_fill_viridis(begin = 0, end = 1, direction = -1, discrete = FALSE)
 ```
 
