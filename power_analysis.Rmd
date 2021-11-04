@@ -24,8 +24,8 @@ Question 1: How many hatchlings should be sampled from a nest to robustly estima
 
 # population parameters
 n_eggs         <- 100    # number of eggs per nest
-max_hatchlings <- 100    # maximum number of hatchlings that can be sampled
-max_males      <- 10     # maximum number of males females can mate with
+max_hatchlings <- 30     # maximum number of hatchlings that can be sampled
+max_males      <- 5      # maximum number of males females can mate with
 max_eggs       <- min(max_hatchlings, n_eggs) 
 
 # model parameters
@@ -51,7 +51,7 @@ for (i in 1:max_males) {
     for (k in 1:n_sims) {
       
       # simulate male contributions to nest
-      nest <- sample(1:i, size = max_eggs, replace = TRUE)
+      nest <- sample(1:i, size = n_eggs, replace = TRUE)
       
       # take samples of size k
       samples <- sample(nest, size = j, replace = FALSE)
@@ -80,7 +80,15 @@ ggplot(DF, aes(x = Sample_size, y = Proportion_correct,
                col = as.factor(Males))) +
   geom_path(lwd = 1) +
   labs(col = 'Number \n of Males') +
-  scale_color_manual(values = colors) 
+  scale_color_manual(values = colors) +
+  ylab('Proportion Correct') +
+  xlab('Hatchlings Sampled') +
+  vline(x = 20, linetype = 2)
+
+# save results to image file
+ggsave(plot = last_plot(), filename = 'figure1.png', 
+       path = 'C:/Users/Vic/Documents/Projects/iliketurtles',
+       width = 5, height = 3)
 ```
 
 ```{r, echo = FALSE, warning = FALSE, message = FALSE, cache = TRUE}
