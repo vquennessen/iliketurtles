@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, echo = FALSE, warning = FALSE, message = FALSE}
 # load libraries
 library(ggplot2)
-library(viridisLite)
+library(viridis)
 library(tidyverse)
 ```
 
@@ -24,7 +24,7 @@ Question 1: How many hatchlings should be sampled from a nest to robustly estima
 
 # population parameters
 n_eggs         <- 100    # number of eggs per nest
-max_hatchlings <- 30     # maximum number of hatchlings that can be sampled
+max_hatchlings <- 40     # maximum number of hatchlings that can be sampled
 max_males      <- 5      # maximum number of males females can mate with
 max_eggs       <- min(max_hatchlings, n_eggs) 
 
@@ -83,11 +83,11 @@ ggplot(DF, aes(x = Sample_size, y = Proportion_correct,
   scale_color_manual(values = colors) +
   ylab('Proportion Correct') +
   xlab('Hatchlings Sampled') +
-  vline(x = 20, linetype = 2)
+  geom_vline(xintercept = 32, linetype = 2)
 
 # save results to image file
 ggsave(plot = last_plot(), filename = 'figure1.png', 
-       path = 'C:/Users/Vic/Documents/Projects/iliketurtles',
+       path = 'C:/Users/Vic/Box Sync/Quennessen_Thesis/presentations/WSN 2021/',
        width = 5, height = 3)
 ```
 
@@ -219,7 +219,7 @@ Mprob <- rep(1/max_n_males, times = max_n_males) # equal probability of mating w
 mating_mode <- 'polyamory' # options are 'polygyny' (males mate with multiple females but females mate with a single male) and 'polyamory' (both males and females have multiple partners)
 
 # model parameters
-nsims <- 100
+nsims <- 100000
 
 # dimensions
 sampM <- seq(from = minM, to = maxM, by = 10)
@@ -308,6 +308,16 @@ ggplot(data = DF, aes(x = Sample_size,
                       y = Number_of_males, 
                       fill = Percent_identified)) +
   geom_tile() +
-  scale_fill_viridis(begin = 0, end = 1, direction = -1, discrete = FALSE)
+  scale_fill_viridis(begin = 0, end = 1, direction = -1, discrete = FALSE, 
+                     breaks = c(0.1, 0.5, 0.9), labels = c(0.1, 0.5, 0.9))  +
+  ylab('Number of Males') +
+  xlab('Females Sampled') +
+  labs(fill = 'Males \n correctly \n identified')
+
+# save results to image file
+ggsave(plot = last_plot(), filename = 'figure2.png', 
+       path = 'C:/Users/Vic/Box Sync/Quennessen_Thesis/presentations/WSN 2021/',
+       width = 5, height = 3)
+
 ```
 
