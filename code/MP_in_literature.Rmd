@@ -1,0 +1,49 @@
+---
+title: "Multiple paternity in the literature"
+author: "Vic Quennessen"
+date: "12/30/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Wright et al. 2012 table 2
+## Green turtles at Alagadi beach in Northern Cyprus
+
+```{r, echo = FALSE}
+
+# load csv
+wright <- read.csv("~/Projects/iliketurtles/data/wright_data.csv")
+
+# average number of fathers column
+wright$average <- (wright$Min..inferred.fathers + wright$Max..inferred.fathers) / 2
+sires <- round(wright$average, digits = 0)
+
+# table of min males
+t1 <- table(sires)/length(sires)
+
+# check that values sum to 1 (done)
+# sum(as.vector(t1))
+t1
+```
+
+# Howe et al. 2017 table 2
+## Loggerhead turtles in Queensland, AUS
+
+```{r, echo = FALSE}
+# load data
+howe <- read.csv('~/Projects/iliketurtles/data/Howe_et_al_2017.csv')
+
+# extract consensus values and spit out probabilities
+sires <- round(howe$CONSENSUS, digits = 0)
+t2 <- table(sires)/length(sires)
+
+# check that values sum to 1 (done)
+# sum(as.vector(t2))
+t2
+```
+
+
+
