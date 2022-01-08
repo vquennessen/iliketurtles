@@ -1,16 +1,11 @@
 ### function for number of eggs to sample to determine the number of sires
 
-
-# population parameters
-n_eggs         <- 100    # number of eggs per nest
-max_hatchlings <- 40     # maximum number of hatchlings that can be sampled
-max_males      <- 7      # maximum number of males females can mate with
-
-eggs_to_sample <- function(n_eggs = 100, 
-                           max_hatchlings = 96, 
-                           max_males = 7, 
-                           breeding, 
-                           n_sims = 100000) {
+eggs_to_sample <- function(n_eggs = 100,         # number of eggs per nest
+                           max_hatchlings = 96,  # max hatchlings sampled
+                           max_males = 7,        # max # of M F can mate with
+                           breeding,             # breeding mode
+                           n_sims = 100000)      # number of simulations to run
+  {
   
   max_eggs <- min(max_hatchlings, n_eggs) 
   
