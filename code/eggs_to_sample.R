@@ -21,7 +21,7 @@ eggs_to_sample <- function(n_eggs = 100,         # number of eggs per nest
     
     if (i > 1) {
       # set contributions per males
-      if (breeding == 'dominate') {
+      if (breeding == 'dominant') {
         MC <- 0.8
         contributions <- c(MC, rep((1 - MC)/(i - 1), (i - 1)))
       } else if (breeding == 'exponential') {
