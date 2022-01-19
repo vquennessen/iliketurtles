@@ -1,13 +1,14 @@
 # function to determine our confidence in BSR estimate given how many nests we 
 # sample to robustly estimate the BSR for that year
 
-nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates with
-                              max_n_females = 10, # maximum # of F each M mates with
-                              minF = 10, # minimum number of F sampled
-                              minM = 10, # minimum number of M in 1 breeding year
-                              maxM = 60, # maximum number of M in 1 breeding year
-                              maxF = 60, # maximum number of F in 1 breeding year
-                              contributions = '' # random, exponential, or dominate
+sample_1_nest <- function(max_n_males = 7, # maximum # of M each F mates with
+                          max_n_females = 10, # maximum # of F each M mates with
+                          minF = 10, # minimum number of F sampled
+                          minM = 10, # minimum number of M in 1 breeding year
+                          maxM = 60, # maximum number of M in 1 breeding year
+                          maxF = 60, # maximum number of F in 1 breeding year
+                          contributions = '', # random, exponential, or dominant
+                          nsims = 100000
 ) 
 {
   
@@ -17,14 +18,11 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
   # options are 'polygyny' (males mate with multiple females but females mate 
   # with a single male) and 'polyamory' (both males and females have multiple 
   # partners)
-  
-  # model parameters
-  nsims <- 100000
-  
+
   # dimensions
   sampM  <- seq(from = minM, to = maxM, by = 5)
   nsampM <- length(sampM)
-  sampF  <- seq(from = minF, to = trueF, by = 5)
+  sampF  <- seq(from = minF, to = maxF, by = 5)
   nsampF <- length(sampF)
   
   # pre-allocate data frame for results
@@ -50,7 +48,7 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
       if (mating_mode == 'polygyny') {
         
         mates <- matrix(sample(x = Mpool, 
-                               size = trueF, 
+                               size = maxF, 
                                replace = FALSE), 
                         ncol = 1)
         
@@ -58,15 +56,15 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
         
         # how many males does each female mate with
         n_males <- sample(1:max_n_males, 
-                          size = trueF, 
+                          size = maxF, 
                           prob = Mprob, 
                           replace = TRUE)
         
         # initialize mates matrix
-        mates <- matrix(NA, nrow = trueF, ncol = max_n_males)
+        mates <- matrix(NA, nrow = maxF, ncol = max_n_males)
         
         # for each female, pull appropriate number of males from mating pool
-        for (i in 1:trueF) {
+        for (i in 1:maxF) {
           j <- n_males[i]
           mates[i, ] <- c(sample(Mpool, size = j), rep(NA, max_n_males - j))
         }
@@ -83,7 +81,7 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
       for (f in 1:length(sampF)) {
         
         # sample females 
-        females <- sample(1:trueF, size = sampF[f])
+        females <- sample(1:maxF, size = sampF[f])
         
         # pre-allocate empty vector for sampled males
         sampled_males <- c()
@@ -105,8 +103,8 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
             
             probs <- 0.5^(0:(max_n_males - 1))
             
-          } else if (contributions == 'dominate') 
-          { # one male dominates in all nests, and others appear in only 1
+          } else if (contributions == 'dominant') 
+          { # one male dominants in all nests, and others appear in only 1
             
             probs <- c(0.9, rep(0))
             
@@ -135,7 +133,7 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
       percent[sim, f] <- (sampled_males / trueM)
       
       # determine estimated breeding sex ratio
-      BSR_estimate[sim, f] <- (sampled_males / trueF)
+      BSR_estimate[sim, f] <- (sampled_males / maxF)
       
     }
     
@@ -161,7 +159,7 @@ nests_to_sample_1 <- function(max_n_males = 7, # maximum # of M each F mates wit
   }
   
   # adjust sample_size to be proportional
-  DF$Prop_sampled <- DF$Sample_size / trueF
+  DF$Prop_sampled <- DF$Sample_size / maxF
   
   # add column for proportion correct > 80% TRUE or FALSE
   DF$PC <- DF$Percent_identified >= 0.80
