@@ -18,6 +18,9 @@ library(raster)
 library(igraph)
 library(rgeos)
 library(gridExtra)
+
+# set number of simulations to run
+n_sims <- 100
 ```
 
 ## Power analysis
@@ -26,220 +29,83 @@ Question 1: How many hatchlings should be sampled from a nest to robustly estima
 
 ### assuming random fertilization
 ```{r, fig.height = 2.25, warning = FALSE}
-source('code/eggs_to_sample.R')
+source('eggs_to_sample.R')
 
 eggs_to_sample(n_eggs = 100, max_hatchlings = 96, max_males = 7, 
-               breeding = 'random', n_sims = 1000)
+               breeding = 'random', n_sims = n_sims)
 ```
 \newpage
 
 ### assuming exponential decay in fertilization (1/2, 1/4, 1/8, etc.)
 ```{r, fig.height = 4}
-source('code/eggs_to_sample.R')
+source('eggs_to_sample.R')
 
 eggs_to_sample(n_eggs = 100, 
                max_hatchlings = 96, 
                max_males = 7, 
                breeding = 'exponential', 
-               n_sims = 1000)
+               n_sims = n_sims)
 ```
 
 \newpage
 
 ### assuming one dominant sire
 ```{r, fig.height = 4}
-source('code/eggs_to_sample.R')
+source('eggs_to_sample.R')
 
 eggs_to_sample(n_eggs = 100, 
                max_hatchlings = 96, 
                max_males = 7, 
-               breeding = 'dominate', 
-               n_sims = 1000)
+               breeding = 'dominant', 
+               n_sims = n_sims)
 ```
 
 \newpage
 
 Question 2: How many females and nests should be sampled to get a robust estimate of the number of breeding males, and therefore the breeding sex ratio?
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
-# biological parameters
-max_n_males <- 5      # maximum number of males each female can mate with
-max_n_females <- 10   # maximum number of females each male can mate with
-minF  <- 10           # minimum number of females sampled
-minM  <- 10           # minimum number of males in one breeding year
-maxM  <- 60           # maximum number of males in one breeding year
-trueF <- 60           # maximum number of females in one breeding year
-Mprob <- rep(1/max_n_males, times = max_n_males)
-# equal probability of mating with 1-5 males
-mating_mode <- 'polyamory'
-# options are 'polygyny' (males mate with multiple females but females mate with
-# a single male) and 'polyamory' (both males and females have multiple partners)
+### assuming random fertilization
+```{r, fig.height = 2.25, warning = FALSE}
+source('sample_all_nests.R')
 
-# model parameters
-nsims <- 100000
-
-# dimensions
-sampM <- seq(from = minM, to = maxM, by = 5)
-nsampM <- length(sampM)
-sampF <- seq(from = minF, to = trueF, by = 5)
-nsampF <- length(sampF)
-
-# pre-allocate data frame for results
-DF <- data.frame(Number_of_males = rep(sampM, each = nsampF),
-                 Sample_size = rep(sampF, times = nsampM),
-                 Percent_identified = rep(NA, times = nsampF*nsampM),
-                 Est_BSR = rep(NA, times = nsampF*nsampM))
+sample_all_nests(max_n_males = 7,
+                 max_n_females = 10, 
+                 minF = 10, 
+                 minM = 10, 
+                 maxF = 60, 
+                 maxM = 60, 
+                 breeding = 'random',
+                 nsims = n_sims)
 ```
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
-# for each number of potential males
-for (m in 1:length(sampM)) {
-  
-  # pre-allocate vector of correct number of males identified
-  # and breeding sex ratio
-  percent <- matrix(NA, nrow = nsims, ncol = nsampF)
-  BSR_estimate <- matrix(NA, nrow = nsims, ncol = nsampF)
-  
-  for (sim in 1:nsims) {
-    
-    # build pool of potential males to mate with
-    Mpool <- rep(1:sampM[m], times = max_n_females)
-    
-    # simulate breeding - create a matrix of males mated with
-    if (mating_mode == 'polygyny') {
-      
-      mates <- matrix(sample(Mpool, size = trueF, replace = FALSE), ncol = 1)
-      
-    } else if (mating_mode == 'polyamory') {
-      
-      # how many males does each female mate with
-      n_males <- sample(1:max_n_males, size = trueF, prob = Mprob, 
-                        replace = TRUE)
-      
-      # initialize mates matrix
-      mates <- matrix(NA, nrow = trueF, ncol = max_n_males)
-      
-      # for each female, pull appropriate number of males from mating pool
-      for (i in 1:trueF) {
-        j <- n_males[i]
-        mates[i, ] <- c(sample(Mpool, size = j), rep(NA, max_n_males - j))
-      }
-      
-    }
-    
-    # identify total number of contributing males (correct value)
-    trueM <- length(unique(as.vector(mates))) - 1
-    
-    # simulate sampling
-    
-    ## assuming perfect information
-    
-    # for each sample size of females, from 10 to total number of females 
-    # nesting
-    for (f in 1:length(sampF)) {
-      
-      # sample females to get represented males
-      sampled_males <- length(unique(as.vector(na.omit(mates[sample(1:trueF, 
-                                                                    size = sampF[f]), 
-                                                             ]))))
-      
-      # determine percent of breeding males identified
-      percent[sim, f] <- (sampled_males / trueM)
-      
-      # determine estimated breeding sex ratio
-      BSR_estimate[sim, f] <- (sampled_males / trueF)
-      
-    }
-    
-    ## assuming imperfect information
-    
-  }
-  
-  # add proportion of times the correct number of males was IDd by number of 
-  # males and sample size
-  
-  # take mean of correct columns (sample sizes) to get proportion correct
-  percent_identified <- colMeans(percent, na.rm = TRUE)
-  
-  # take mean of correct columns (sample sizes) to get proportion correct
-  avg_BSR_estimate <- colMeans(BSR_estimate, na.rm = TRUE)
-  
-  # calculate appropriate indices for DF
-  index_start <- (m - 1)*nsampF + 1
-  index_end <- index_start + nsampF - 1
-  
-  # store proportion correct values in DF
-  DF$Percent_identified[index_start:index_end] <- percent_identified
-  
-  # store average BSM in DF
-  DF$Est_BSR[index_start:index_end] <- avg_BSR_estimate
-  
-}
+\newpage
+
+### assuming exponential decay in fertilization (1 nest, 1/2, 1/4, 1/8, etc.)
+```{r, fig.height = 2.5, warning = FALSE}
+source('sample_all_nests.R')
+
+sample_all_nests(max_n_males = 7,
+                 max_n_females = 10, 
+                 minF = 10, 
+                 minM = 10, 
+                 maxF = 60, 
+                 maxM = 60, 
+                 breeding = 'exponential',
+                 nsims = n_sims)
 ```
 
-```{r, echo = FALSE, warning = FALSE, message = FALSE}
-# adjust sample_size to be proportional
-DF$Prop_sampled <- DF$Sample_size / trueF
+\newpage
 
-# add column for proportion correct > 80% TRUE or FALSE
-DF$PC <- DF$Percent_identified >= 0.80
+### assuming one dominant sire
+```{r, fig.height = 2.5, warning = FALSE}
+source('sample_all_nests.R')
 
-# convert data.frame to data.table and reshape to wide
-DF2 <- dcast(setDT(DF), Number_of_males ~ Prop_sampled, value.var = "PC")
-
-# reverse order of rows to match raster order
-# remove first column
-# convert to matrix and then to raster
-r <- raster(as.matrix(DF2[ , .SD[.N:1, -1]]),
-            xmn = 0, xmx = ncol(DF2) - 1, ymn = 0, ymx = ncol(DF2) - 1)
-
-# detect clumps of connected cells of the value TRUE
-# convert raster to polygons
-# dissolve polygons into multi-polygons
-polys <- rasterToPolygons(clump(r), dissolve = TRUE)
-
-# grab coordinates of individual polygons and convert to a data.table
-# use idcol = TRUE to enable grouping of paths when plotting
-d_poly <- rbindlist(lapply(polys@polygons,
-                           function(x) as.data.table(x@Polygons[[1]]@coords)),
-                    idcol = TRUE)
-
-# plot an outline around each 'patch of significant values' using geom_path
-ggplot(data = DF, aes(x = Prop_sampled,
-                      y = Number_of_males)) +
-  geom_tile(aes(fill = Percent_identified)) +
-  scale_fill_viridis(begin = 0, end = 1, direction = -1, discrete = FALSE,
-                     breaks = c(0.1, 0.5, 0.9), labels = c(0.1, 0.5, 0.9))  +
-  ylab('Number of potentially breeding males') +
-  xlab('Proportion of females sampled') +
-  labs(fill = 'Breeding \n sex ratio \n correctly \n identified') +
-  geom_path(data = d_poly, aes(x = 0.25*x / 3 + 0.75/6, 
-                               y = 5*y + 7.5, 
-                               group = .id),
-            size = 1, color = "brown1")
-
-# save results to image file
-ggsave(plot = last_plot(), filename = 'figure2.png',
-       path = 'C:/Users/Vic/Box Sync/Quennessen_Thesis/presentations/
-       NMFS Scholars Symposium 2021/',
-       width = 4, height = 3)
+sample_all_nests(max_n_males = 7,
+                 max_n_females = 10, 
+                 minF = 10, 
+                 minM = 10, 
+                 maxF = 60, 
+                 maxM = 60, 
+                 breeding = 'dominant',
+                 nsims = n_sims)
 ```
-
-```{r}
-# figure 3 - breeding sex ratio heatmap
-ggplot(data = DF, aes(x = Prop_sampled,
-                      y = Number_of_males)) +
-  geom_tile(aes(fill = Est_BSR)) +
-  scale_fill_viridis(begin = 0, end = 1, direction = -1, discrete = FALSE,
-                     breaks = c(0.2, 0.4, 0.6), labels = c(0.2, 0.4, 0.6))  +
-  ylab('Number of potentially breeding males') +
-  xlab('Proportion of females sampled') +
-  labs(fill = 'Estimated \n breeding \n sex ratio')
-
-# save results to image file
-ggsave(plot = last_plot(), filename = 'figure3.png',
-       path = 'C:/Users/Vic/Box Sync/Quennessen_Thesis/presentations/
-       NMFS Scholars Symposium 2021/',
-       width = 4, height = 3)
-```
-
