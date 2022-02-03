@@ -20,34 +20,34 @@ library(rgeos)
 library(gridExtra)
 
 # set number of simulations to run
-n_sims <- 100
+n_sims <- 10000
 ```
 
 ## Power analysis
 
 Question 1: How many hatchlings should be sampled from a nest to robustly estimate the number of males that contributed to it?
 
-### assuming random fertilization
-```{r, fig.height = 2.25, warning = FALSE}
-source('eggs_to_sample.R')
+<!-- ### assuming random fertilization -->
+<!-- ```{r, fig.height = 2.25, warning = FALSE} -->
+<!-- source('eggs_to_sample.R') -->
 
-eggs_to_sample(n_eggs = 100, max_hatchlings = 96, max_males = 7, 
-               breeding = 'random', n_sims = n_sims)
-```
-\newpage
+<!-- eggs_to_sample(n_eggs = 100, max_hatchlings = 96, max_males = 7,  -->
+<!--                breeding = 'random', n_sims = n_sims) -->
+<!-- ``` -->
+<!-- \newpage -->
 
-### assuming exponential decay in fertilization (1/2, 1/4, 1/8, etc.)
-```{r, fig.height = 4}
-source('eggs_to_sample.R')
+<!-- ### assuming exponential decay in fertilization (1/2, 1/4, 1/8, etc.) -->
+<!-- ```{r, fig.height = 4} -->
+<!-- source('eggs_to_sample.R') -->
 
-eggs_to_sample(n_eggs = 100, 
-               max_hatchlings = 96, 
-               max_males = 7, 
-               breeding = 'exponential', 
-               n_sims = n_sims)
-```
+<!-- eggs_to_sample(n_eggs = 100,  -->
+<!--                max_hatchlings = 96,  -->
+<!--                max_males = 7,  -->
+<!--                breeding = 'exponential',  -->
+<!--                n_sims = n_sims) -->
+<!-- ``` -->
 
-\newpage
+<!-- \newpage -->
 
 ### assuming one dominant sire
 ```{r, fig.height = 4}
@@ -60,52 +60,52 @@ eggs_to_sample(n_eggs = 100,
                n_sims = n_sims)
 ```
 
-\newpage
+<!-- \newpage -->
 
-Question 2: How many females and nests should be sampled to get a robust estimate of the number of breeding males, and therefore the breeding sex ratio?
+<!-- Question 2: How many females and nests should be sampled to get a robust estimate of the number of breeding males, and therefore the breeding sex ratio? -->
 
-### assuming random fertilization
-```{r, fig.height = 2.25, warning = FALSE}
-source('sample_all_nests.R')
+<!-- ### assuming random fertilization -->
+<!-- ```{r, fig.height = 2.25, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
 
-sample_all_nests(max_n_males = 7,
-                 max_n_females = 10, 
-                 minF = 10, 
-                 minM = 10, 
-                 maxF = 60, 
-                 maxM = 60, 
-                 breeding = 'random',
-                 nsims = n_sims)
-```
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'random', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
 
-\newpage
+<!-- \newpage -->
 
-### assuming exponential decay in fertilization (1 nest, 1/2, 1/4, 1/8, etc.)
-```{r, fig.height = 2.5, warning = FALSE}
-source('sample_all_nests.R')
+<!-- ### assuming exponential decay in fertilization (1 nest, 1/2, 1/4, 1/8, etc.) -->
+<!-- ```{r, fig.height = 2.5, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
 
-sample_all_nests(max_n_males = 7,
-                 max_n_females = 10, 
-                 minF = 10, 
-                 minM = 10, 
-                 maxF = 60, 
-                 maxM = 60, 
-                 breeding = 'exponential',
-                 nsims = n_sims)
-```
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'exponential', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
 
-\newpage
+<!-- \newpage -->
 
-### assuming one dominant sire
-```{r, fig.height = 2.5, warning = FALSE}
-source('sample_all_nests.R')
+<!-- ### assuming one dominant sire -->
+<!-- ```{r, fig.height = 2.5, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
 
-sample_all_nests(max_n_males = 7,
-                 max_n_females = 10, 
-                 minF = 10, 
-                 minM = 10, 
-                 maxF = 60, 
-                 maxM = 60, 
-                 breeding = 'dominant',
-                 nsims = n_sims)
-```
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'dominant', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
