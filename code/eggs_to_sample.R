@@ -92,19 +92,18 @@ eggs_to_sample <- function(n_eggs = 100,         # number of eggs per nest
   
   
   # What's our confidence if we sample 32 percent of the eggs?
-  
-  DF32 <- subset(DF, Sample_size == 32)
-  DF32 <- DF32[, c(1, 3)]
-  names(DF32) <- c('Number of Males', 'Confidence')
-  row.names(DF32) <- NULL
-  
+  library(dplyr)
+  DFsamples <- subset(DF, Sample_size %in% c(32, 48, 64, 80, 96))
+  newDFsamples <- DFsamples %>% 
+    spread(Sample_size, Proportion_correct)
+
   png(filename = paste('C://Users/vique/Documents/Projects/iliketurtles/figures/', 
                        breeding, '_ss32_conf_table.png', sep = ''), 
       width = 200, height = 200)
-  grid.table(DF32)
+  grid.table(newDFsamples)
   dev.off()
   
-  output <- list(fig1, DF32)
+  output <- list(fig1, newDFsamples)
   
   return(output)
   
