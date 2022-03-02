@@ -97,11 +97,20 @@ hatchlings_to_sample <- function(n_hatchlings = 100,         # number of eggs pe
     geom_vline(xintercept = c(n_sizes), linetype = 3)
   
   # save results to image file
-  ggsave(plot = last_plot(), 
-         filename = paste(breeding, '_fig1_hatchlings_to_sample.png', sep = ''),
-         path = 'C://Users/vique/Documents/Projects/iliketurtles/figures',
-         width = 6, height = 3)
   
+  if (breeding == 'dominant') {
+    ggsave(plot = last_plot(), 
+           filename = paste(breeding, '_', dom*100, 
+                            '_fig1_hatchlings_to_sample.png', sep = ''),
+           path = 'C://Users/vique/Documents/Projects/iliketurtles/figures',
+           width = 6, height = 3)
+    
+  } else {
+    ggsave(plot = last_plot(), 
+           filename = paste(breeding, '_fig1_hatchlings_to_sample.png', sep = ''),
+           path = 'C://Users/vique/Documents/Projects/iliketurtles/figures',
+           width = 6, height = 3)
+  }
   
   # What's our confidence if we sample 32 percent of the eggs?
   library(dplyr)
@@ -109,11 +118,20 @@ hatchlings_to_sample <- function(n_hatchlings = 100,         # number of eggs pe
   newDFsamples <- DFsamples %>% 
     spread(Sample_size, Proportion_correct)
   
+  
+  if (breeding == 'dominant') {
+    png(filename = paste('C://Users/vique/Documents/Projects/iliketurtles/figures/', 
+                         breeding, '_', dom*100, '_conf_table.png', sep = ''), 
+        width = 200, height = 200)
+    grid.table(newDFsamples)
+    dev.off()
+  } else {
   png(filename = paste('C://Users/vique/Documents/Projects/iliketurtles/figures/', 
                        breeding, '_conf_table.png', sep = ''), 
       width = 200, height = 200)
   grid.table(newDFsamples)
   dev.off()
+  }
   
   output <- list(fig1, newDFsamples)
   
