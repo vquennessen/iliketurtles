@@ -146,7 +146,7 @@ hatchlings_to_sample(n_hatchlings = 100,
 
 #### Proportion fertilized by each sire is calculated as the average contribution for each sire based on Alfaro-Nunez et al. 2015:
 
-![Figure 1 (Alfaro-Nunez et al. 2015)](C:/Users/vique/Documents/Projects/iliketurtles/figures/alfaro_nunez_2015_figure1.PNG)
+![Figure 1 (Alfaro-Nunez et al. 2015)](C:/Users/Vic/Documents/Projects/iliketurtles/figures/alfaro_nunez_2015_figure1.PNG)
 
 
 
