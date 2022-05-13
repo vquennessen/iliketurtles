@@ -89,6 +89,7 @@ hatchlings_to_sample <- function(n_hatchlings = 100,         # number of eggs pe
   # plot results
   fig1 <- ggplot(DF, aes(x = Sample_size, y = Proportion_correct, 
                          col = as.factor(Males))) +
+    geom_hline(yintercept = 0.8, linetype = 2) +
     geom_path(lwd = 1) +
     labs(col = 'Number \n of Males') +
     scale_color_manual(values = colors) +
@@ -102,13 +103,13 @@ hatchlings_to_sample <- function(n_hatchlings = 100,         # number of eggs pe
     ggsave(plot = last_plot(), 
            filename = paste(breeding, '_', dom*100, 
                             '_fig1_hatchlings_to_sample.png', sep = ''),
-           path = 'C://Users/vique/Documents/Projects/iliketurtles/figures',
+           path = 'C://Users/Vic/Documents/Projects/iliketurtles/figures',
            width = 6, height = 3)
     
   } else {
     ggsave(plot = last_plot(), 
            filename = paste(breeding, '_fig1_hatchlings_to_sample.png', sep = ''),
-           path = 'C://Users/vique/Documents/Projects/iliketurtles/figures',
+           path = 'C://Users/Vic/Documents/Projects/iliketurtles/figures',
            width = 6, height = 3)
   }
   
@@ -120,13 +121,13 @@ hatchlings_to_sample <- function(n_hatchlings = 100,         # number of eggs pe
   
   
   if (breeding == 'dominant') {
-    png(filename = paste('C://Users/vique/Documents/Projects/iliketurtles/figures/', 
+    png(filename = paste('C://Users/Vic/Documents/Projects/iliketurtles/figures/', 
                          breeding, '_', dom*100, '_conf_table.png', sep = ''), 
         width = 200, height = 200)
     grid.table(newDFsamples)
     dev.off()
   } else {
-  png(filename = paste('C://Users/vique/Documents/Projects/iliketurtles/figures/', 
+  png(filename = paste('C://Users/Vic/Documents/Projects/iliketurtles/figures/', 
                        breeding, '_conf_table.png', sep = ''), 
       width = 200, height = 200)
   grid.table(newDFsamples)
