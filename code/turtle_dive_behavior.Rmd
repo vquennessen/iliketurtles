@@ -20,6 +20,8 @@ library(dplyr)
 ID <- 41589
 ```
 
+### TO DO: Armando will send new data with 2 hour intervals, remove nesting rows
+
 ```{r, import data}
 # make sure to change this so you import the data from your own working directory
 
@@ -71,6 +73,8 @@ dives$Range <- max(dives$DepthMax, dives$DepthMin)
 
 
 1. How many dives (dives can start in one interval and finish in the next, so in this case we should break into fractions - how much of the dive occurred in one segment and what fraction belongs to the next interval); and 3. sum of dive interval 
+
+### TO DO: assign dive to interval where > 50% of dive time was spent
 
 ```{r}
 # add Dives and Dive_time column to GPS_turtle
@@ -142,6 +146,8 @@ for (gps in 1:(nrow(GPS_turtle) - 1)) {
 \newpage
 
 4. what percentage of each dive shape
+
+### TO DO: between each GPS interval
 
 ```{r}
 prop.table(table(dives$Shape))
