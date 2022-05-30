@@ -26,9 +26,9 @@ ID <- 41589
 # make sure to change this so you import the data from your own working directory
 
 # import GPS data, filter by turtle
-GPS <- read.csv('~/Projects/iliketurtles/data/MERGED_centroid.csv', 
+GPS <- read.csv('~/Projects/iliketurtles/data/IN_Ei_data_processed_2_hour.csv', 
                 header = TRUE)
-GPS_turtle <- GPS %>% filter(Name == ID)
+GPS_turtle <- GPS %>% filter(id == ID)
 
 # import data
 behavior <- read.csv(paste('~/Projects/iliketurtles/data/', ID, '-Behavior.csv', 
@@ -37,8 +37,8 @@ behavior <- read.csv(paste('~/Projects/iliketurtles/data/', ID, '-Behavior.csv',
 # make date objects
 behavior$Start <- as.POSIXlt(behavior$Start, format = "%H:%M:%S %d-%b-%Y")
 behavior$End <- as.POSIXlt(behavior$End, format = "%H:%M:%S %d-%b-%Y")
-GPS_turtle$Day_time <- as.POSIXlt(GPS_turtle$Day_time, 
-                                  format = "%d/%m/%Y %H:%M")
+GPS_turtle$date <- as.POSIXlt(GPS_turtle$date, 
+                                  format = "%Y-%m-%d %H:%M:%S")
 
 # extract only dives from behavior
 dives <- behavior %>% filter(What == 'Dive')
