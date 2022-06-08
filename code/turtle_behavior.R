@@ -61,7 +61,6 @@ for (t in 1:length(turtle_IDs)) {
   GPS_turtle$Avg_dive_time_sec <- NA          # average dive time, in seconds
   GPS_turtle$Avg_dive_depth <- NA             # average dive depth, in meters
   GPS_turtle$SD_dive_depth <- NA              # standard deviation of dive depth
-  GPS_turtle$Avg_dive_depth <- NA             # average dive depth
   
   GPS_turtle$Number_surfaces <- NA            # total number of surfaces
   GPS_turtle$Surfaces <- NA                   # surface indices
@@ -216,10 +215,10 @@ for (t in 1:length(turtle_IDs)) {
     GPS_turtle$Avg_dive_time_sec[gps] <- mean(dives$Time_sec[GPS_turtle$Dives[[gps]]])
     
     # add average dive depth to GPS dataframe, in m
-    GPS_turtle$SD_dive_depth[gps] <- sd(dives$Depth[GPS_turtle$Dives[[gps]]])
-    
-    # add average dive depth to GPS dataframe, in m
     GPS_turtle$Avg_dive_depth[gps] <- mean(dives$Depth[GPS_turtle$Dives[[gps]]])
+    
+    # add standard deviation of dive depth to GPS dataframe
+    GPS_turtle$SD_dive_depth[gps] <- sd(dives$Depth[GPS_turtle$Dives[[gps]]])
     
     # add whole surfaces + any partial surfaces that are 50% or more of the surface time 
     # to GPS dataframe in the surfaces column
