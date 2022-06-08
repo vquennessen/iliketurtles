@@ -3,8 +3,8 @@
 # last updated: 06/02/2022
 
 # load libraries
-library(lubridate)
 library(dplyr)
+library(lubridate)
 
 # list all turtle IDs to be analyzed
 turtle_IDs <- c(41589)
@@ -15,9 +15,6 @@ turtle_IDs <- c(41589)
 # import GPS data
 GPS <- read.csv('~/Projects/iliketurtles/data/IN_Ei_data_processed_2_hour.csv', 
                 header = TRUE)
-
-# initialize new GPS dataframe
-new_GPS <- NA
 
 # for each turtle ID: 
 for (t in 1:length(turtle_IDs)) {
@@ -62,6 +59,7 @@ for (t in 1:length(turtle_IDs)) {
   GPS_turtle$Dives <- NA                      # dive indices
   GPS_turtle$Total_dive_time_sec <- NA        # total dive time, in seconds
   GPS_turtle$Avg_dive_time_sec <- NA          # average dive time, in seconds
+  GPS_turtle$Avg_dive_depth <- NA             # average dive depth, in meters
   GPS_turtle$SD_dive_depth <- NA              # standard deviation of dive depth
   
   GPS_turtle$Number_surfaces <- NA            # total number of surfaces
@@ -117,9 +115,8 @@ for (t in 1:length(turtle_IDs)) {
           GPS_interval <- interval(GPS_turtle$date[gps], GPS_turtle$date[gps + 1])
           dive_interval <- interval(dives$Start[partial_dives[pd]], 
                                     dives$End[partial_dives[pd]])
-          seconds_overlap[pd] <- second(as.period(intersect(GPS_interval, 
-                                                            dive_interval), 
-                                                  "seconds"))
+          seconds_overlap[pd] <- lubridate::second(
+            as.period(intersect(GPS_interval, dive_interval), "seconds"))
         }
         
         # add actual dive numbers to GPS dataframe, with partial dives
@@ -150,9 +147,9 @@ for (t in 1:length(turtle_IDs)) {
           GPS_interval_surfaces <- interval(GPS_turtle$date[gps], GPS_turtle$date[gps + 1])
           surface_interval_surfaces <- interval(surfaces$Start[partial_surfaces[ps]], 
                                                 surfaces$End[partial_surfaces[ps]])
-          seconds_overlap_surfaces[ps] <- second(as.period(intersect(GPS_interval_surfaces, 
-                                                                     surface_interval_surfaces), 
-                                                           "seconds"))
+          seconds_overlap_surfaces[ps] <- lubridate::second(
+            as.period(intersect(GPS_interval_surfaces, surface_interval_surfaces), 
+                      "seconds"))
         }
         
         # add actual surface numbers to GPS dataframe, with partial surfaces
@@ -218,6 +215,9 @@ for (t in 1:length(turtle_IDs)) {
     GPS_turtle$Avg_dive_time_sec[gps] <- mean(dives$Time_sec[GPS_turtle$Dives[[gps]]])
     
     # add average dive depth to GPS dataframe, in m
+    GPS_turtle$Avg_dive_depth[gps] <- mean(dives$Depth[GPS_turtle$Dives[[gps]]])
+    
+    # add standard deviation of dive depth to GPS dataframe
     GPS_turtle$SD_dive_depth[gps] <- sd(dives$Depth[GPS_turtle$Dives[[gps]]])
     
     # add whole surfaces + any partial surfaces that are 50% or more of the surface time 
@@ -238,10 +238,21 @@ for (t in 1:length(turtle_IDs)) {
   # check if any surfaces are in more than one row / interval (if not, should be 0): 
   anyDuplicated(unlist(GPS_turtle$Surfaces))
   
-  # append new GPS dataframe to new_GPS
-  new_GPS <- append(new_GPS, GPS)
+  if (t == 1) {
+    
+    new_GPS <- GPS_turtle
+    
+  } else if (t > 1) {
+    
+    new_GPS <- rbind(new_GPS, GPS_turtle)
+    
+  }
   
 }
 
+# make Dives and Surfaces columns character vectors instead of lists
+new_GPS$Dives <- paste(new_GPS$Dives)
+new_GPS$Surfaces <- paste(new_GPS$Surfaces)
+
 # write new GPS dataframe to new .csv file
-write(new_GPS, file = 'new_GPS.csv')
+write.csv(new_GPS, file = '~/Projects/iliketurtles/data/new_GPS.csv')
