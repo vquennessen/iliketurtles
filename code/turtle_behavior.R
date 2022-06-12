@@ -13,7 +13,10 @@ turtle_IDs <- c(41589)
 # working directory
 
 # import GPS data
-GPS <- read.csv('~/Projects/iliketurtles/data/IN_Ei_data_processed_2_hour.csv', 
+# GPS <- read.csv('~/Projects/iliketurtles/data/IN_Ei_data_processed_2_hour.csv', 
+#                 header = TRUE)
+
+GPS <- read.csv('~/Projects/iliketurtles/data/IN_Ei_data_processed_without_nesting.csv', 
                 header = TRUE)
 
 # for each turtle ID: 
