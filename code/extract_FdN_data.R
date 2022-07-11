@@ -24,16 +24,16 @@ new_S1 <- S1 %>%
          MARCAS_ENC.2 = NA)
 
 new_S2 <- S2 %>%
-  rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
-  rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
+  dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
+  dplyr::rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
   select(TIPO_REG, N_NINHO, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, MARCAS_ENC.1, 
          VIVOS, OVOS_TOT, INCUBAÇAO) %>%
   mutate(Season = 2021, 
          MARCAS_ENC.2 = NA)
 
 new_S3 <- S3 %>%
-  rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
-  rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
+  dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
+  dplyr::rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
   select(TIPO_REG, N_NINHO, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, MARCAS_ENC.1, 
          MARCAS_ENC.2, VIVOS, OVOS_TOT, INCUBAÇAO) %>%
   mutate(Season = 2022)
@@ -47,7 +47,7 @@ nests <- all_seasons %>%
   mutate(Female = NA) %>%
   mutate(Hatching_success = VIVOS / OVOS_TOT)
 
-##### initialise females reference DF with column names and first female #######
+##### initialize females reference DF with column names and first female #######
 
 # first marcas
 marcas <- as.character(as.vector(nests[7, c(3, 4, 5, 6, 11)]))
@@ -361,4 +361,10 @@ median(nests_S2_S3$n, na.rm = TRUE)
 # 5
 
 ##### remigration interval for females #########################################
+
+# for each female
+female_seasons <- nests_females %>%
+  select(Female, Season) %>%
+  group_by(Female) %>%
+  mutate(Seasons = list(unique(Season)))
 
