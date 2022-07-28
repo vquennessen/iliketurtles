@@ -8,4 +8,9 @@ pop_dynamics <- function(F_survival, M_survival, t) {
   # annual survival - males
   N[2, , t + 1, s] <- M_survival * N[2, , t, s]
   
+  # output
+  output <- list(N)
+  
+  return(output)
+  
 }
