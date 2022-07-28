@@ -7,7 +7,7 @@ library(ggplot2)
 x <- seq(from = 0, to = 1, by = 0.01)
 
 # beta values to cycle through
-betas <- c(1:5)
+betas <- c(1:5, 10, 25, 100)
 
 # initialise DF
 DF <- data.frame(Breeding_Sex_Ratio = rep(x, times = length(betas)), 
