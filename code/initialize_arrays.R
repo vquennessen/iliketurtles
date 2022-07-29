@@ -1,6 +1,6 @@
 # initialize arrays
 
-initialize_arrays <- function(max_age, years, no_scenarios, 
+initialize_arrays <- function(max_age, years, no_betas, no_scenarios, 
                               F_survival_years, F_survival_values, 
                               M_survival_years, M_survival_values) {
   
@@ -9,8 +9,8 @@ initialize_arrays <- function(max_age, years, no_scenarios,
   a <- length(ages) # number of age classes
   
   # initialize population size array by age class and sex
-  N <- array(rep(NA, times = 2 * a * years * no_scenarios), 
-             dim = c(2, a, years, no_scenarios))
+  N <- array(rep(NA, times = 2 * a * years * no_betas, no_scenarios), 
+             dim = c(2, a, years, no_betas, no_scenarios))
   
   # survival values vector - females
   F_survival <- rep(F_survival_values, times = F_survival_years)
