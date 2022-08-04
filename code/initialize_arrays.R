@@ -1,12 +1,32 @@
 # initialize arrays
 
-initialize_arrays <- function(max_age, years, no_betas, no_scenarios, 
+initialize_arrays <- function(max_age, years, betas, scenarios, 
+                              pivotal_temp, TRT, temp_mu, temp_sd,
                               F_survival_years, F_survival_values, 
                               M_survival_years, M_survival_values) {
   
   # age classes
-  ages <- 1:max_age # all age classes
-  a <- length(ages) # number of age classes
+  ages <- 1:max_age   # all age classes
+  
+  # dimensions
+  no_betas <- length(betas)                     # number of mating functions
+  no_scenarios <- length(scenarios)             # number of climate scenarios
+  a <- length(ages)                             # number of age classes
+  
+  # temperature scenarios
+  temperatures <- array(rep(NA, years * no_scenarios), 
+                        dim = c(years, no_scenarios))
+  
+  # no change scenario
+  temperatures[, 1] <- rnorm(years, mean = temp_mu, sd = temp_sd)
+  
+  # other scenarios
+  # TODO
+  
+  # temperature to sex ratio
+  # TODO
+  x <- seq(from = TRT[1], to = TRT[2], by = 0.01)
+  prop_male <- xxx
   
   # initialize population size array by age class and sex
   N <- array(rep(NA, times = 2 * a * years * no_betas, no_scenarios), 
@@ -32,7 +52,7 @@ initialize_arrays <- function(max_age, years, no_betas, no_scenarios,
   }
                 
   
-  output <- list(N, F_survival, M_survival)
+  output <- list(temperatures, prop_male, N, F_survival, M_survival)
   
   return(output)
   
