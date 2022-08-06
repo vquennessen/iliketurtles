@@ -26,7 +26,7 @@ initialize_arrays <- function(max_age, years, betas, scenarios,
   # temperature to sex ratio
   # TODO
   x <- seq(from = TRT[1], to = TRT[2], by = 0.01)
-  prop_male <- xxx
+  prop_male <- exp(logit_a + logit_b*x) / (1 + exp(logit_a + logit_b*x))
   
   # initialize population size array by age class and sex
   N <- array(rep(NA, times = 2 * a * years * no_betas, no_scenarios), 
