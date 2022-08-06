@@ -14,6 +14,9 @@ M_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.490)  # survival per stage - M
 betas <- c(1, 10, 100)                                # mating function beta
 pivotal_temp <- 29.3                                  # pivotal temperature 
 TRT <- c(27.6, 31.4)                                  # TR temperatures
+logit_a <- 41.362228                                  # temp -> prop. male a
+logit_b <- -1.415462                                  # temp -> prop. male b
+
 
 # climate data
 temp_mu <- x
