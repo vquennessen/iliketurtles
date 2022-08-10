@@ -368,3 +368,28 @@ female_seasons <- nests_females %>%
   group_by(Female) %>%
   mutate(Seasons = list(unique(Season)))
 
+##### number of males captured #################################################
+
+male_captures <- read.csv('../data/2021_2022_in_Water.xlsx - Turtle capture.csv')
+
+# num_males <- nrow(subset(male_captures, Tag.status == 'New recruit'))
+# num_males
+
+# take 2
+
+tag1 <- gsub('BRA ', '', male_captures$Flipper_Tag_.1)
+tag1.1 <- as.numeric(gsub('BR ', '', tag1))
+
+tag2 <- gsub('BRA ', '', male_captures$Flipper_Tag_.2)
+tag2.1 <- as.numeric(gsub('BR ', '', tag2))
+
+sums <- tag1.1 + tag2.1
+length(sums)
+length(unique(sums))
+
+# 33 unique males
+
+# double check
+new_males <- data.frame(Tag1 = male_captures$Flipper_Tag_.1, 
+                        Tag2 = male_captures$Flipper_Tag_.2, 
+                        sum = sums)
