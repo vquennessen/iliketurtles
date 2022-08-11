@@ -49,7 +49,8 @@ base_model <- function(max_age, F_survival_years, F_survival_values,
         # reproduction
         rep_output <- reproduction(N, age_maturity, max_age, years, t, betas, b, 
                                    scenarios, s, remigration_int, nests_mu, 
-                                   nests_sd, eggs_mu, eggs_sd, hatch_success,
+                                   nests_sd, eggs_mu, eggs_sd, 
+                                   hatch_success = hatch_success[t, b, s],
                                    temp, temp_sd, climate_stochasticity) 
         
         N <- rep_output[[1]]
