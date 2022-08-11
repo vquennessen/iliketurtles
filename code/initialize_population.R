@@ -1,79 +1,64 @@
-initialize_population <- function(max_age, start_year, end_year, betas, 
-                                  scenarios, hatch_success_stochasticity, 
-                                  hatch_success_a, hatch_success_b, 
-                                  hatch_success_mu, temp_mu, age_maturity,
-                                  burn_in, F_survival, M_survival, 
-                                  remigration_int, nests_mu, nests_sd, 
-                                  eggs_mu, eggs_sd, temp_sd, 
-                                  climate_stochasticity) {
-  
-  # age classes
-  ages <- 1:max_age   # all age classes
-  
-  # years
-  years <- seq(from = start_year, to = end_year)
-  
-  # dimensions
-  no_betas <- length(betas)                     # number of mating functions
-  no_scenarios <- length(scenarios)             # number of climate scenarios
-  a <- length(ages)                             # number of age classes
-  y <- length(years)                            # number of years to run
-  
-  # initialize hatching success
-  # determine hatching success
-  if (hatch_success_stochasticity == TRUE) {
-    hatch_success <- array(rbeta(n = y * no_betas * no_scenarios, 
-                                 shape1 = hatch_success_a, 
-                                 shape2 = hatch_success_b), 
-                           dim = y * no_betas * no_scenarios)
-  } else {
-    hatch_success <- array(rep(hatch_success_mu, times = y * no_betas * no_scenarios), 
-                           dim = y * no_betas * no_scenarios)
-  }
-  
-  # incubation temperature
-  temperature <- temp_mu
+initialize_population <- function(ages, no_betas, betas, no_scenarios, 
+                                  scenarios, a, temp_mu, age_maturity, 
+                                  burn_in, max_age, remigration_int, 
+                                  nests_mu, nests_sd, eggs_mu, eggs_sd,
+                                  hatch_success, f_Leslie, m_Leslie) {
   
   # initialize population size array by age class and sex
-  N <- array(rep(NA, times = 2 * a * y * no_betas * no_scenarios), 
-             dim = c(2, a, y, no_betas, no_scenarios))
+  N <- array(rep(NA, times = 2 * a * burn_in * no_betas * no_scenarios), 
+             dim = c(2, a, burn_in, no_betas, no_scenarios))
   
-  # add initial population size estimates to N
+  # add initial population size estimates to N at t = 1
   
-  # breeding females - 2 per age (112 females tagged S1-S3)
-  N[1, age_maturity:(age_maturity + 56), , ,] <- 2
+  # females - 2 per age (112 females tagged S1-S3)
+  N[1, 2:max_age, 1, , ] <- 100
   
-  # breeding males - 1 per age (33 males tagged in S1-S3)
-  N[2, age_maturity:(age_maturity + 32), , ,] <- 1
+  # proportion male based on average temperature
+  prop_male <- exp(logit_a + logit_b*temp_mu) / (1 + exp(logit_a + logit_b*temp_mu))
+  
+  # female hatchlings
+  N[1, 1, 1, , ] <- round(111500 * (1 - prop_male))
+  
+  # male hatchlings
+  N[2, 1, 1, , ] <- round(111500 * prop_male)
+  
+  # males - 1 per age (33 males tagged in S1-S3)
+  N[2, 2:max_age, 1, , ] <- 100
   
   # move population forward in time burn_in years
-  for (t in 1:burn_in) {
+  for (t in 2:burn_in) {
     
-    for (b in 1:length(betas)) {
+    for (b in 1:no_betas) {
       
-      # reproduction
-      rep_output <- reproduction(N, age_maturity, max_age, years, t, betas, b, 
-                                 scenarios = 'SSP2-4.5', s = 1, 
-                                 remigration_int, nests_mu, nests_sd, eggs_mu, 
-                                 eggs_sd, hatch_success, temp = temp_mu, 
-                                 temp_sd, climate_stochasticity) 
-      
-      N <- rep_output[[1]]
-      
-      # population dynamics
-      # survival for each age 
-      for (a in 2:max_age) {
+      for (s in 1:no_scenarios) {
         
-        # annual survival - females
-        N[1, a, t + 1, , ] <- F_survival * N[1, a - 1, t, b, s]
+        # reproduction
+        rep_output <- reproduction(N, age_maturity, max_age, years, t, betas, b, 
+                                   scenarios = 'SSP2.5-4', s = 1, 
+                                   remigration_int, nests_mu, nests_sd,
+                                   eggs_mu, eggs_sd, 
+                                   hatch_success = hatch_success_mu,
+                                   temp = temp_mu, temp_sd, 
+                                   climate_stochasticity = FALSE) 
         
-        # annual survival - males
-        N[2, a, t + 1, , ] <- M_survival * N[2, a - 1, t, b, s]
+        N <- rep_output[[1]]
+        
+        # population dynamics
+          # annual survival - females
+          N[1, , t, b, s] <- round(f_Leslie %*% N[1, , t - 1, b, s])
+          
+          # annual survival - males
+          N[2, , t, b, s] <- round(m_Leslie %*% N[2, , t - 1, b, s])
         
       }
       
     }
     
+    print(t)
+    
   }
+  
+  # output of N population size array
+  return(N)
   
 }
