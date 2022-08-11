@@ -8,10 +8,10 @@ reproduction <- function(N, age_maturity, max_age, years, t, betas, b,
   # extract breeding adults from N
   
   # females only breed every remigration_int years
-  n_breeding_F <- floor(sum(N[1, age_maturity:max_age, t, b, s], na.rm = TRUE) / remigration_int)
+  n_breeding_F <- floor(sum(N[1, age_maturity:max_age, t - 1, b, s], na.rm = TRUE) / remigration_int)
   
   # males mate every year???
-  n_breeding_M <- floor(sum(N[2, age_maturity:max_age, t, b, s], na.rm = TRUE))
+  n_breeding_M <- floor(sum(N[2, age_maturity:max_age, t - 1, b, s], na.rm = TRUE))
   
   # proportion of males
   prop_males <- n_breeding_M / (n_breeding_M + n_breeding_F)
@@ -22,20 +22,21 @@ reproduction <- function(N, age_maturity, max_age, years, t, betas, b,
   # number of nests per female
   nests <- round(rnorm(n = n_breeding_F, mean = nests_mu, sd = nests_sd))
   
-  # number of eggs per nest
-  DF <- data.frame(Nests = nests, 
-                   Eggs = rep(NA, times = length(nests)))
+  # replace any zeros or -1 with +1
+  nests[which(nests < 1)] <- 1
   
-  for (n in 1:length(nests)) {
+  # initialize eggs vector
+  eggs <- rep(NA, times = n_breeding_F)
+
+  # number of eggs per nest
+  for (f in 1:n_breeding_F) {
     
-    DF$Eggs[n] <- sum(round(rnorm(n = DF$Nests[n], 
-                                  mean = eggs_mu, 
-                                  sd = eggs_sd)))
+    eggs[f] <- sum(round(rnorm(n = nests[f], mean = eggs_mu, sd = eggs_sd)))
     
   }
   
   # total hatchlings = total eggs * hatching success * breeding_success
-  hatchlings <- sum(DF$Eggs) * hatch_success[t, b, s] * breeding_success
+  hatchlings <- sum(eggs) * hatch_success * breeding_success
   
   # for current temperature 
   if (climate_stochasticity == TRUE) {
@@ -52,8 +53,8 @@ reproduction <- function(N, age_maturity, max_age, years, t, betas, b,
   male_hatchlings <- round(hatchlings * prop_male)
   
   # add to population size array
-  N[1, 1, t + 1, b, s] <- female_hatchlings
-  N[2, 1, t + 1, b, s] <- male_hatchlings
+  N[1, 1, t, b, s] <- female_hatchlings
+  N[2, 1, t, b, s] <- male_hatchlings
   
   output <- list(N)
   
