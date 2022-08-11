@@ -393,3 +393,16 @@ length(unique(sums))
 new_males <- data.frame(Tag1 = male_captures$Flipper_Tag_.1, 
                         Tag2 = male_captures$Flipper_Tag_.2, 
                         sum = sums)
+
+##### hatchling production #####################################################
+
+load('../data/nests.Rdata')
+
+hatchlings <- nests %>%
+  #filter(Season != 2020) %>%
+  group_by(Season) %>%
+  summarize(nests = n(), 
+            hatchlings = sum(VIVOS, na.rm = TRUE)) %>%
+  mutate(avg_hatchlings = nests*102*0.811)
+
+# mean hatchlings = 18530
