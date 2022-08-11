@@ -10,7 +10,7 @@ initialize_population2 <- function(hatchlings, F_survival, M_survival, max_age, 
 
   
   # pull hatchlings from 15000 to 25000 for each year
-  init_hatchlings <- sample(x = 20000:25000, size = max_age)
+  init_hatchlings <- sample(x = 18580:25000, size = max_age)
   
   # initial female and male hatchlings
   init_females <- round(init_hatchlings*(1 - prop_male))
