@@ -20,17 +20,17 @@ initialize_arrays <- function(max_age, start_year, end_year, betas,
   # initialize hatching success
   # determine hatching success
   if (hatch_success_stochasticity == TRUE) {
-    hatch_success <- array(rbeta(n = y * no_betas * no_scenarios, 
-                                 shape1 = hatch_success_a, 
-                                 shape2 = hatch_success_b), 
-                           dim = y * no_betas * no_scenarios)
+    hatch_success <- karray(rbeta(n = y * no_betas * no_scenarios, 
+                                  shape1 = hatch_success_a, 
+                                  shape2 = hatch_success_b), 
+                            dim = c(y, no_betas, no_scenarios))
   } else {
-    hatch_success <- array(rep(hatch_success_mu, times = y * no_betas * no_scenarios), 
-                           dim = y * no_betas * no_scenarios)
+    hatch_success <- karray(rep(hatch_success_mu, times = y * no_betas * no_scenarios), 
+                            dim = c(y, no_betas, no_scenarios))
   }
   
   # initialize temperature scenarios
-  temperatures <- array(rep(NA, y * no_scenarios), dim = c(y, no_scenarios))
+  temperatures <- karray(rep(NA, y * no_scenarios), dim = c(y, no_scenarios))
   
   for (ns in 1:no_scenarios) {
     
@@ -38,7 +38,7 @@ initialize_arrays <- function(max_age, start_year, end_year, betas,
     # TODO 
     
     if (scenarios[ns] == 'SSP2-4.5') {
-       
+      
       year1 <- 2040
       temp1 <- temp_mu + 0.65
       
@@ -64,14 +64,6 @@ initialize_arrays <- function(max_age, start_year, end_year, betas,
     
   }
   
-  # initialize population size array by age class and sex
-  N <- initialize_population(max_age, start_year, end_year, betas, scenarios, 
-                             hatch_success_stochasticity, hatch_success_a, 
-                             hatch_success_b, hatch_success_mu, temp_mu, 
-                             age_maturity, burn_in = 50, F_survival, M_survival, 
-                             remigration_int, nests_mu, nests_sd, eggs_mu, 
-                             eggs_sd, temp_sd, climate_stochasticity)
-  
   # survival values vector - females
   F_survival <- rep(F_survival_values, times = F_survival_years)
   
@@ -81,15 +73,33 @@ initialize_arrays <- function(max_age, start_year, end_year, betas,
   # check it's long enough, and if not, add the last survival_value until it is
   # females
   if (length(F_survival) < max_age) {
-    survival <- c(F_survival, rep(F_survival_values[length(F_survival_values)], 
-                                  max_age - length(F_survival)))
+    F_survival <- c(F_survival, rep(F_survival_values[length(F_survival_values)], 
+                                    max_age - length(F_survival)))
   }
   
   # males
   if (length(M_survival) < max_age) {
-    survival <- c(M_survival, rep(M_survival_values[length(M_survival_values)], 
-                                  max_age - length(M_survival)))
+    M_survival <- c(M_survival, rep(M_survival_values[length(M_survival_values)], 
+                                    max_age - length(M_survival)))
   }
+  
+  # make female lefkovitch matrix for survival
+  f_matrix <- matrix(diag(F_survival[1:(max_age - 1)]), ncol = max_age - 1)
+  f_Leslie <- rbind(rep(0, max_age), cbind(f_matrix, rep(0, max_age - 1)))
+  
+  # make male lefkovitch matrix for survival
+  m_matrix <- matrix(diag(M_survival[1:(max_age - 1)]), ncol = max_age - 1)
+  m_Leslie <- rbind(rep(0, max_age), cbind(m_matrix, rep(0, max_age - 1)))
+  
+  # initialize population size array by age class and sex
+  N_output <- initialize_population(ages, no_betas, betas, no_scenarios, 
+                                    scenarios, a, temp_mu, age_maturity, 
+                                    burn_in = 150, max_age, remigration_int, 
+                                    nests_mu, nests_sd, eggs_mu, eggs_sd,
+                                    hatch_success = hatch_success_mu, 
+                                    f_Leslie, m_Leslie)
+  
+  N[, , 1, , , ] <- N_output[, , burn_in, , , ]
   
   # output
   output <- list(ages, years, hatch_success, temperatures, N, 
