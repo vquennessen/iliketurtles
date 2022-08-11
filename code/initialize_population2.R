@@ -1,6 +1,7 @@
 initialize_population2 <- function(hatchlings, F_survival, M_survival, max_age, prop_male) {
   
   # difference in average global temperature of 0.7
+  # source: https://www.climate.gov/news-features/understanding-climate/climate-change-global-temperature
   temp_1937 <- temp_mu - 0.7
   temp_2022 <- temp_mu
   
