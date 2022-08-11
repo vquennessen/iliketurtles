@@ -10,6 +10,9 @@ run_base_model <- function(num_sims, scenarios, betas) {
   source('reproduction.R')
   source('initialize_population.R')
   
+  # load libraries
+  library(keep)
+  
   # add start time to progress.txt file to track progress of runs
   start_time <- paste('Start time: ', Sys.time(), ' - ', Scenario, ' - ', 
                       Species, ': ', num_sims, ' sims', sep = '')
@@ -62,11 +65,11 @@ run_base_model <- function(num_sims, scenarios, betas) {
   # initialize yield and biomass arrays
   
   # initialize population size array by age class and sex
-  sims_N <- array(rep(NA, times = 2 * a * y * no_betas * no_scenarios * num_sims), 
-                  dim = c(2, a, y, no_betas, no_scenarios, num_sims))
+  sims_N <- karray(rep(NA, times = 2 * a * y * no_betas * no_scenarios * num_sims), 
+                   dim = c(2, a, y, no_betas, no_scenarios, num_sims))
   
-  sims_abundance <- array(rep(NA, times = y * no_betas * no_scenarios * num_sims), 
-                          dim = c(y, no_betas, no_scenarios, num_sims))  
+  sims_abundance <- karray(rep(NA, times = y * no_betas * no_scenarios * num_sims), 
+                           dim = c(y, no_betas, no_scenarios, num_sims))  
   
   ##############################################################################
   
