@@ -4,7 +4,7 @@ initialize_population2 <- function(hatchlings, F_survival, M_survival, max_age, 
   temp_1937 <- temp_mu - 0.7
   temp_2022 <- temp_mu
   
-  temps <- seq(from = temp_1937, to = temp_2022, length = 2022 - 1937 + 1)
+  temps <- seq(from = temp_1937, to = temp_2022, length = 2022 - 1937)
   
   props_male <- exp(logit_a + logit_b*temps) / (1 + exp(logit_a + logit_b*temps))
 
