@@ -11,101 +11,8 @@ library(reshape)
 # set working directory
 setwd('~/Projects/iliketurtles/code')
 
-# import data
-S1 <- read.csv("../data/2019_2020_FDN_nesting.csv")                   # season 1
-S2 <- read.csv("../data/2020_2021_nesting_Season_2.csv")              # season 2
-S3 <- read.csv("../data/2021_2022_Nesting_Season_3.csv")              # season 3
-
-# clean up datasets - only keep columns we want, and add season column
-new_S1 <- S1 %>%
-  select(TIPO_REG, N_NINHO, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, MARCAS_ENC.1, 
-         VIVOS, OVOS_TOT, INCUBAÇAO) %>%
-  mutate(Season = 2020, 
-         MARCAS_ENC.2 = NA)
-
-new_S2 <- S2 %>%
-  dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
-  dplyr::rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
-  select(TIPO_REG, N_NINHO, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, MARCAS_ENC.1, 
-         VIVOS, OVOS_TOT, INCUBAÇAO) %>%
-  mutate(Season = 2021, 
-         MARCAS_ENC.2 = NA)
-
-new_S3 <- S3 %>%
-  dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
-  dplyr::rename("INCUBAÇAO" = "Tempo.de.incubação") %>%
-  select(TIPO_REG, N_NINHO, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, MARCAS_ENC.1, 
-         MARCAS_ENC.2, VIVOS, OVOS_TOT, INCUBAÇAO) %>%
-  mutate(Season = 2022)
-
-# put all seasons together
-all_seasons <- rbind(new_S1, new_S2, new_S3)
-
-# nests
-nests <- all_seasons %>%
-  filter(TIPO_REG == 'CD') %>%
-  mutate(Female = NA) %>%
-  mutate(Hatching_success = VIVOS / OVOS_TOT)
-
-##### initialize females reference DF with column names and first female #######
-
-# first marcas
-marcas <- as.character(as.vector(nests[7, c(3, 4, 5, 6, 11)]))
-
-# remove NAs from marcas
-marcas_no_NAs <- marcas[!is.na(marcas)]
-
-# initialize females dataframe
-females <- data.frame(Female = NA, 
-                      Marca1 = NA, Marca2 = NA, Marca3 = NA)
-females[1, ] <- c(1, marcas_no_NAs, rep(NA, 3 - length(marcas_no_NAs)))
-
-
-# troubleshooting - turn warnings into errors
-# options(warn = 2)
-# turn option back off
-options(warn = 1)
-
-# go through nests, and assign females by marcas
-for (i in 8:nrow(nests)) {
-  
-  # extract marcas from dataframe
-  marcas <- as.character(as.vector(nests[i, c(3, 4, 5, 6, 11)]))
-  
-  # if there are values that are not NAs:
-  if (sum(!is.na(marcas)) > 0) {
-    
-    # remove NAs from marcas
-    marcas_no_NAs <- marcas[!is.na(marcas)]
-    
-    # determine if a row in females contains marcas
-    present <- females %>% filter_at(vars(Marca1, Marca2, Marca3), 
-                                     any_vars(. %in% marcas_no_NAs))   
-    
-    # if the female is not yet present in the females dataframe: 
-    if (sum(!is.na(present)) == 0) {
-      
-      # add to females dataframe
-      females[nrow(females) + 1, ] <- c(nrow(females) + 1, 
-                                        marcas_no_NAs, 
-                                        rep(NA, 3 - length(marcas_no_NAs)))
-      
-      # add female number to nests dataframe
-      nests$Female[i] <- nrow(females)
-      
-    } else {
-      
-      # assign female number to nests dataframe
-      nests$Female[i] <- as.numeric(present$Female)
-      
-    }
-    
-  }
-  
-}
-
-# save females object to data
-save(females, file = '../data/females.Rdata')
+load('../data/females.Rdata')
+load('../data/nests.Rdata')
 
 ##### eggs per nest ############################################################
 
@@ -264,6 +171,7 @@ beta <- alpha / mu - alpha
 beta
 
 
+
 ##### number of nests ##########################################################
 
 # nests with females ID'd
@@ -402,7 +310,16 @@ hatchlings <- nests %>%
   #filter(Season != 2020) %>%
   group_by(Season) %>%
   summarize(nests = n(), 
+            eggs = sum(OVOS_TOT, na.rm = TRUE),
             hatchlings = sum(VIVOS, na.rm = TRUE)) %>%
   mutate(avg_hatchlings = nests*102*0.811)
 
-# mean hatchlings = 18530
+# mean hatchlings = 14642, 10423, 18530
+
+
+##### number of nests destroyed / predated by season ###########################
+
+noS1 <- nests %>%
+  filter(Season != 2020) %>%
+  group_by(Season, HIST_NINHO) %>%
+  summarize(n = n())
