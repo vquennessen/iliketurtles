@@ -28,7 +28,8 @@ sample_nests <- function(max_n_males = 7,    # maximum # of sires per F
   females <- replicate(n = nsims*nsampM, 
                        sample(x = 1:maxF, size = sample_all_N, replace = FALSE))
   
-  # set probabilities of detecting contributing males by breeding scheme
+  # set probabilities of detecting contributing males by breeding scheme - 
+  # based on sampling 32 hatchlings per nest
   if (breeding == 'random') 
   { # all males contribute evenly to all nests
     
