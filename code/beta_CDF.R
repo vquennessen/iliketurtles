@@ -36,5 +36,6 @@ ggplot(data = DF, aes(x = Breeding_Sex_Ratio, y = Reproductive_Success,
         plot.title = element_text(margin = margin(b = 10, t = 10))) +
   ylab('Reproductive Success') +
   xlab('Breeding Sex Ratio') +
-  ggtitle('Hypothetical mating functions')
+  ggtitle('Hypothetical mating functions') +
+  theme_gray()
 
