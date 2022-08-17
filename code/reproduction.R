@@ -1,26 +1,20 @@
 # reproduction
 
-reproduction <- function(N, age_maturity, max_age, years, t, betas, b, 
-                         scenarios, s, remigration_int, nests_mu, nests_sd,
-                         eggs_mu, eggs_sd, hatch_success,
-                         temp, temp_sd, climate_stochasticity) {
-  
+reproduction <- function(n_breeding_M, n_breeding_F, beta,
+                         nests_mu, nests_sd, eggs_mu, eggs_sd, 
+                         hatch_success, climate_stochasticity, 
+                         temp, temp_sd, logit_a, logit_b, N, y) {
+
   # extract breeding adults from N
-  
-  # females only breed every remigration_int years
-  n_breeding_F <- floor(sum(N[1, age_maturity:max_age, t - 1, b, s], na.rm = TRUE) / remigration_int)
-  
-  # males mate every year???
-  n_breeding_M <- floor(sum(N[2, age_maturity:max_age, t - 1, b, s], na.rm = TRUE))
   
   # proportion of males
   prop_males <- n_breeding_M / (n_breeding_M + n_breeding_F)
   
   # relate prop_males to breeding success via mating function
-  breeding_success <- pbeta(prop_males, shape1 = 1, shape2 = betas[b])
+  breeding_success <- pbeta(prop_malcalculatees, shape1 = 1, shape2 = beta)
   
   # number of nests per female
-  nests <- round(rnorm(n = n_breeding_F, mean = nests_mu, sd = nests_sd))
+  nests <- floor(rnorm(n = n_breeding_F, mean = nests_mu, sd = nests_sd))
   
   # replace any zeros or -1 with +1
   nests[which(nests < 1)] <- 1
@@ -31,7 +25,7 @@ reproduction <- function(N, age_maturity, max_age, years, t, betas, b,
   # number of eggs per nest
   for (f in 1:n_breeding_F) {
     
-    eggs[f] <- sum(round(rnorm(n = nests[f], mean = eggs_mu, sd = eggs_sd)))
+    eggs[f] <- sum(floor(rnorm(n = nests[f], mean = eggs_mu, sd = eggs_sd)))
     
   }
   
@@ -49,14 +43,11 @@ reproduction <- function(N, age_maturity, max_age, years, t, betas, b,
   prop_male <- exp(logit_a + logit_b*temperature) / (1 + exp(logit_a + logit_b*temperature))
   
   # number of male and female hatchlings
-  female_hatchlings <- round(hatchlings * (1 - prop_male))
-  male_hatchlings <- round(hatchlings * prop_male)
-  
-  # add to population size array
-  N[1, 1, t, b, s] <- female_hatchlings
-  N[2, 1, t, b, s] <- male_hatchlings
-  
-  output <- list(N)
+  female_hatchlings <- floor(hatchlings * (1 - prop_male))
+  male_hatchlings <- floor(hatchlings * prop_male)
+
+  # output
+  output <- list(female_hatchlings, male_hatchlings)
   
   return(output)
   
