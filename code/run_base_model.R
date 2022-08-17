@@ -1,21 +1,8 @@
-run_base_model <- function(num_sims, scenarios, betas) {
-  
-  # set working directory
-  setwd("~/Projects/iliketurtles/code")
-  
-  # source needed functions
-  setwd("~/Projects/iliketurtles/code")
-  source('initialize_arrays.R')
-  source('pop_dynamics.R')
-  source('reproduction.R')
-  source('initialize_population.R')
-  
-  # load libraries
-  library(keep)
+run_base_model <- function(num_sims, scenario, beta) {
   
   # add start time to progress.txt file to track progress of runs
-  start_time <- paste('Start time: ', Sys.time(), ' - ', Scenario, ' - ', 
-                      Species, ': ', num_sims, ' sims', sep = '')
+  start_time <- paste('Start time: ', Sys.time(), ' - ', scenario, ' - beta ', 
+                      beta, ' - ', num_sims, ' sims', sep = '')
   
   write(start_time, file = 'progress.txt', append = TRUE)
   
@@ -24,11 +11,10 @@ run_base_model <- function(num_sims, scenarios, betas) {
   # turtle demographics
   max_age <- 85                                         # lifespan
   F_survival_years <- c(1, 2, 7, 12, 1)                 # years per stage - F
-  F_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.929)  # survival per stage - F
+  F_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.799)  # survival per stage - F
   M_survival_years <- c(1, 2, 7, 12, 1)                 # years per stage - M
-  M_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.490)  # survival per stage - M
+  M_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.799)  # survival per stage - M
   age_maturity <- 23                                    # age at first reproduction
-  betas <- c(1, 10, 100)                                # mating function beta
   remigration_int <- 4                                  # remigration interval
   nests_mu <- 4.94209                                   # mean number of nests per female per season
   nests_sd <- 1.94                                      # sd of number of nests per female per season
@@ -51,25 +37,24 @@ run_base_model <- function(num_sims, scenarios, betas) {
   # model parameters
   start_year <- 2023                              # first year to simulate
   end_year <- 2100                                # last year to simulate
-  scenarios <- c('SSP2-4.5')                      # climate scenarios
-  num_sims <- 10                                  # number of simulations to run
   
   # dimensions
-  y <- length(start_year:end_year)
-  a <- max_age
-  no_betas <- length(betas)
-  no_scenarios <- length(scenarios)
+  A <- max_age
+  Y <- length(start_year:end_year)
   
   ##############################################################################
   
   # initialize yield and biomass arrays
   
   # initialize population size array by age class and sex
-  sims_N <- karray(rep(NA, times = 2 * a * y * no_betas * no_scenarios * num_sims), 
-                   dim = c(2, a, y, no_betas, no_scenarios, num_sims))
+  sims_N <- array(rep(NA, times = 2 * A * Y * num_sims), 
+                  dim = c(2, A, Y, num_sims))
   
-  sims_abundance <- karray(rep(NA, times = y * no_betas * no_scenarios * num_sims), 
-                           dim = c(y, no_betas, no_scenarios, num_sims))  
+  sims_abundance <- array(rep(NA, times = Y * num_sims), 
+                          dim = c(Y, num_sims))  
+  
+  sims_mature_abundance <- array(rep(NA, times = Y * num_sims), 
+                                 dim = c(Y, num_sims))  
   
   ##############################################################################
   
@@ -77,32 +62,39 @@ run_base_model <- function(num_sims, scenarios, betas) {
   for (i in 1:num_sims) {
     
     output <- base_model(max_age, F_survival_years, F_survival_values, 
-                         M_survival_years, M_survival_values, 
-                         betas, remigration_int, nests_mu, nests_sd,
-                         pivotal_temp, TRT, logit_a, logit_b, 
-                         temp_mu, temp_sd, climate_stochasticity, 
-                         start_year, end_year, scenarios, num_sims)
+                         M_survival_years, M_survival_values, age_maturity, 
+                         beta, remigration_int, nests_mu, nests_sd, 
+                         eggs_mu, eggs_sd, hatch_success_mu, hatch_success_a, 
+                         hatch_success_b, hatch_success_stochasticity, 
+                         logit_a, logit_b, temp_mu, temp_sd, 
+                         climate_stochasticity, start_year, end_year, scenario, 
+                         A, Y)
     
     # save the N and abundance arrays 
-    sims_N[, , , , , i]     <- output$N
-    sims_abundance[, , , i] <- output$abundance
+    sims_N[, , , i]            <- output[[1]]
+    sims_abundance[, i]        <- output[[2]]
+    sims_mature_abundance[, i] <- output[[3]]
     
     # write to progress text file
-    if ((i/num_sims*100) %% 10 == 0) {
-      update <- paste(Sys.time(), ' - ', Scenario, ' - ', Species, ' - ', 
-                      i/num_sims*100, '% done!', sep = '')
+    if (i == num_sims) {
+      update <- paste(Sys.time(), ' - ', scenario, ' - beta ', beta, 
+                      ' - 100% done!', sep = '')
       write(update, file = 'progress.txt', append = TRUE)
     }
     
   }
   
   # get filepaths to save objects to
-  
-  filepath1 = paste('../data/', Q, '_N.Rda', sep = '')
-  filepath2 = paste('../data/', Q, '_abundance.Rda', sep = '')
-  
+  filepath1 = paste('../output/', scenario, '/beta', beta, '/', num_sims, 
+                    '_N.Rda', sep = '')
+  filepath2 = paste('../output/', scenario, '/beta', beta, '/', num_sims, 
+                    '_abundance.Rda', sep = '')  
+  filepath3 = paste('../output/', scenario, '/beta', beta, '/', num_sims, 
+                    '_mature_abundance.Rda', sep = '') 
   # save objects
   save(sims_N, file = filepath1)
   save(sims_abundance, file = filepath2)
+  save(sims_mature_abundance, file = filepath3)
+  
   
 }
