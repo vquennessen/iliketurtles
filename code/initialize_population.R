@@ -26,15 +26,15 @@ initialize_population <- function(ages, no_betas, betas, no_scenarios,
   N[2, 2:max_age, 1, , ] <- 100
   
   # move population forward in time burn_in years
-  for (t in 2:burn_in) {
+  for (y in 2:burn_in) {
     
     for (b in 1:no_betas) {
       
       for (s in 1:no_scenarios) {
         
         # reproduction
-        rep_output <- reproduction(N, age_maturity, max_age, years, t, betas, b, 
-                                   scenarios = 'SSP2.5-4', s = 1, 
+        rep_output <- reproduction(N, age_maturity, max_age, years, y, betas, b, 
+                                   scenarios = 'SSP2-4.5', s = 1, 
                                    remigration_int, nests_mu, nests_sd,
                                    eggs_mu, eggs_sd, 
                                    hatch_success = hatch_success_mu,
@@ -45,16 +45,16 @@ initialize_population <- function(ages, no_betas, betas, no_scenarios,
         
         # population dynamics
           # annual survival - females
-          N[1, , t, b, s] <- round(f_Leslie %*% N[1, , t - 1, b, s])
+          N[1, , y, b, s] <- round(f_Leslie %*% N[1, , y - 1, b, s])
           
           # annual survival - males
-          N[2, , t, b, s] <- round(m_Leslie %*% N[2, , t - 1, b, s])
+          N[2, , y, b, s] <- round(m_Leslie %*% N[2, , y - 1, b, s])
         
       }
       
     }
     
-    print(t)
+    print(y)
     
   }
   
