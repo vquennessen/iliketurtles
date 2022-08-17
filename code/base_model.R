@@ -1,63 +1,69 @@
 # base model
 
 base_model <- function(max_age, F_survival_years, F_survival_values, 
-                       M_survival_years, M_survival_values, 
-                       betas, remigration_int, nests_mu, nests_sd,
-                       eggs_mu, eggs_sd, hatch_success, 
-                       pivotal_temp, TRT, logit_a, logit_b, 
-                       temp_mu, temp_sd, climate_stochasticity, 
-                       start_year, end_year, scenarios, num_sims) {
+                       M_survival_years, M_survival_values, age_maturity, 
+                       beta, remigration_int, nests_mu, nests_sd, 
+                       eggs_mu, eggs_sd, hatch_success_mu, hatch_success_a, 
+                       hatch_success_b, hatch_success_stochasticity, 
+                       logit_a, logit_b, temp_mu, temp_sd, 
+                       climate_stochasticity, start_year, end_year, scenario, 
+                       A, Y) {
   
   ##### source initialized arrays ##############################################
   
-  init_output <- initialize_arrays(max_age, start_year, end_year, betas, 
-                                   scenarios, num_sims, temp_mu, temp_sd, 
+  init_output <- initialize_arrays(start_year, end_year, A, Y, 
+                                   hatch_success_stochasticity, hatch_success_a, 
+                                   hatch_success_b, hatch_success_mu, scenario, 
                                    F_survival_years, F_survival_values, 
-                                   M_survival_years, M_survival_values)
+                                   M_survival_years, M_survival_values, 
+                                   temp_mu, logit_a, logit_b)
   
-  ages <- init_output[[1]]           # ages
-  years <- init_output[[2]]          # years to run model
-  hatch_success <- init_output[[3]]  # array of hatching success values
-  temperatures <- init_output[[4]]   # temperatures across climate scenarios
-  N <- init_output[[5]]              # population size array
-  F_survival <- init_output[[6]]     # vector of survival values - females
-  M_survival <- init_output[[7]]     # vector of survival values - males
+  years <- init_output[[1]]          # years to run model
+  hatch_success <- init_output[[2]]  # array of hatching success values
+  temperatures <- init_output[[3]]   # temperatures across climate scenarios
+  N <- init_output[[4]]              # population size array
+  F_survival <- init_output[[5]]     # vector of survival values - females
+  M_survival <- init_output[[6]]     # vector of survival values - males
+  f_Leslie <- init_output[[7]]       # female Leslie matrix
+  m_Leslie <- init_output[[8]]       # male Leslie matrix
   
   ##### model ##################################################################
   
-  for (t in 1:y) {
+  for (y in 2:Y) {
     
-    for (b in 1:length(betas)) {
-      
-      for (s in 1:num_scenarios) {
-        
-        # population dynamics
-        # survival for each age 
-        for (a in 2:max_age) {
-          
-          # annual survival - females
-          N[1, a, t + 1, , ] <- F_survival * N[1, a - 1, t, b, s]
-          
-          # annual survival - males
-          N[2, a, t + 1, , ] <- M_survival * N[2, a - 1, t, b, s]
-          
-        }
-        
-        # climate change temperature estimates
-        temp <- temperatures[t]
-        
-        # reproduction
-        rep_output <- reproduction(N, age_maturity, max_age, years, t, betas, b, 
-                                   scenarios, s, remigration_int, nests_mu, 
-                                   nests_sd, eggs_mu, eggs_sd, 
-                                   hatch_success = hatch_success[t, b, s],
-                                   temp, temp_sd, climate_stochasticity) 
-        
-        N <- rep_output[[1]]
-        
-      }
-      
-    }
+    # population dynamics
+    # survival for each age 
+    
+    # annual survival - females
+    N[1, , y] <- floor(f_Leslie %*% N[1, , y - 1])
+    
+    # annual survival - males
+    N[2, , y] <- floor(m_Leslie %*% N[2, , y - 1])
+    
+    # climate change temperature estimates
+    temp <- temperatures[y]
+    
+    # calculate number of breeding adults
+    # females only breed every remigration_int years
+    n_breeding_F <- sum(N[1, age_maturity:max_age, y - 1], 
+                        na.rm = TRUE) / remigration_int
+    
+    # males mate every year???
+    n_breeding_M <- sum(N[2, age_maturity:max_age, y - 1], na.rm = TRUE)
+    
+    # break out of loop if there aren't enough breeding adults
+    if (n_breeding_F < 1 || n_breeding_M < 1) { break }
+    
+    # reproduction
+    rep_output <- reproduction(n_breeding_M, n_breeding_F, beta,
+                               nests_mu, nests_sd, eggs_mu, eggs_sd, 
+                               hatch_success = hatch_success[y], 
+                               climate_stochasticity, temp, temp_sd, 
+                               logit_a, logit_b, N, y)
+    
+    # add recruits to population size array
+    N[1, 1, y] <- rep_output[[1]]
+    N[2, 1, y] <- rep_output[[2]]
     
   }
   
@@ -65,9 +71,10 @@ base_model <- function(max_age, F_survival_years, F_survival_values,
   
   # create abundance array
   abundance <- colSums(N, dims = 2)
+  mature_abundance <- colSums(N[, age_maturity:max_age, ], dims = 2)
   
   # output N and abundance arrays
-  output <- list(N, abundance)
+  output <- list(N, abundance, mature_abundance)
   
   return(output)
   
