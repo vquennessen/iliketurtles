@@ -6,6 +6,7 @@ setwd('~/Projects/iliketurtles')
 # load libraries
 library(ncdf4)
 library(dplyr)
+library(lubridate)
 
 ##### load in and clean up temp data ###########################################
 
@@ -48,11 +49,12 @@ date_time <- c(as.POSIXct(t1*3600, origin = '1900-01-01 00:00'),
                as.POSIXct(t2*3600, origin = '1900-01-01 00:00'))
 
 # create dataframe with times, temp2ms, and SSTs
-data <- data.frame(date_time = date_time, 
-                   temp2m = temp2m, 
-                   SST = SST)
+weather <- data.frame(Hours = as.character(c(t1, t2)), 
+                      date_time = date_time, 
+                      temp2m = temp2m, 
+                      SST = SST)
 
-data
+weather
 
 ##### load in and clean up nesting temp data ###################################
 
@@ -66,14 +68,22 @@ nest_temp <- rbind(season1, season2, season3)
 ### clean up data
 
 # make time object datetime, and rename as date_time
-nest_temp$Time <- as.POSIXct(nest_temp$Time, format = '%m/%d/%Y  %H:%M')
+nest_temp$date_time <- as.POSIXct(nest_temp$Time, format = '%m/%d/%Y  %H:%M')
 
 # rename Temperature column to nest
 rename(nest_temp, nest = Temperature)
 
+# add hours column as number of hours since jan 1st 1900 00:00
+origin <-  as.POSIXct(mdy_hms('01/01/1900 00:00:00'), format = '%m/%d/%Y %H:%M:%S')
+nest_temp$Hours <- difftime(nest_temp$date_time, origin, tz ='UTC', units = "hours")
+nest_temp$Hours <- as.character(nest_temp$Hours)
+
 ##### join dataframes ##########################################################
 
 # remove duplicated rows in data DF
-data2 <- data[-c(7354, 16090, 24994), ]
+weather2 <- weather[-c(7354, 16090, 24994), ]
 
-temps <- left_join(x = data2, y = nest_temp, by = as.character(date_time))
+temps <- nest_temp %>%
+  left_join(weather2) %>%
+  select(date_time, Temperature, temp2m, SST) %>%
+  rename(nest_temp = Temperature)
