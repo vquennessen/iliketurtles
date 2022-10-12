@@ -83,7 +83,17 @@ nest_temp$Hours <- as.character(nest_temp$Hours)
 # remove duplicated rows in data DF
 weather2 <- weather[-c(7354, 16090, 24994), ]
 
+# make season and nest factor variables
+nest_temp$Nest <- as.factor(nest_temp$Nest)
+nest_temp$Season <- as.factor(nest_temp$Season)
+
 temps <- nest_temp %>%
   left_join(weather2) %>%
-  select(date_time, Temperature, temp2m, SST) %>%
-  rename(nest_temp = Temperature)
+  mutate(s.nest = paste(Season, '.', Nest, sep = '')) %>%
+  select(date_time, Temperature, temp2m, SST, Nest, s.nest, Season) %>%
+  rename(nest_temp = Temperature) %>%
+  na.omit()
+
+# save temps as object for further analysis
+save(temps, 
+     file = 'data/temperature_data.Rda')
