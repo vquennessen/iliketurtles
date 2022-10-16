@@ -16,14 +16,14 @@ library(ggplot2)
 load("~/Projects/iliketurtles/data/temperature_data.Rda")
 
 # basic linear regression
-mod1 <- lm(nest_temp ~ temp2m + SST, 
+mod1 <- lm(nest_temp ~ temp2m + SST + incubation.day, 
            data = temps)
 
 summary(mod1)
 # all very significant correlates, r2 of almost zero
 
 # basic linear regression with datetime
-mod2 <- lm(nest_temp ~ temp2m + SST + date_time, 
+mod2 <- lm(nest_temp ~ temp2m + SST + date_time + incubation.day, 
            data = temps)
 
 summary(mod2)
@@ -39,7 +39,7 @@ summary(m1)
 # 1054109  1054161 -527049.4
 
 # random effect for nest nested within season
-m2 <- lme(nest_temp ~ temp2m + SST, 
+m2 <- lme(nest_temp ~ temp2m + SST + incubation.day, 
           data = temps, 
           random = ~ 1 | Season/Nest)
 summary(m2)
@@ -55,10 +55,14 @@ ARMA <- corARMA(value = c(0.2, 0.2),         # just starting value
                 p = 1, q = 1)                # for ARMA correlation
 
 # random effect for nest nested within season
-m3 <- lme(nest_temp ~ temp2m + SST + incubation.day, # formula
-          data = temps,                              # dataframe
-          random = ~ 1 | Season / Nest,              # random effect of nest
-          correlation = ARMA)                        # ARMA correlation   
-summary(m3)
-# AIC      BIC      logLik
-# 1054080  1054143  -527034
+# m3 <- lme(nest_temp ~ temp2m + SST + incubation.day, # formula
+#           data = temps,                              # dataframe
+#           random = ~ 1 | Season / Nest,              # random effect of nest
+#           correlation = ARMA)                        # ARMA correlation   
+# summary(m3)
+# # AIC       BIC      logLik
+# # 1008863   1008958  -504422.7
+# 
+# save(m3, file = "data/m3.Rda")
+
+load(file = "data/m3.Rda")
