@@ -91,10 +91,10 @@ temps <- nest_temp %>%
   left_join(weather2) %>%
   mutate(s.nest = paste(Season, '.', Nest, sep = '')) %>%
   select(date_time, Temperature, temp2m, SST, Nest, s.nest, Season) %>%
+  na.omit() %>%
   rename(nest_temp = Temperature) %>%
   group_by(s.nest) %>%
-  mutate(incubation.day = day(date_time - min(date_time))) %>%
-  na.omit()
+  mutate(incubation.day = as.numeric((date_time - min(date_time)) / (3600*24)))
 
 # save temps as object for further analysis
 save(temps, 
