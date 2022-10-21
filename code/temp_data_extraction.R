@@ -103,14 +103,33 @@ temps <- nest_temp %>%
   ungroup() %>%
   group_by(Season, Nest) %>%
   mutate(incubation.prop = as.numeric(date - min(date)) /
-           max(as.numeric(date - min(date))), 
-         lag1 = date - 1, 
-         lag2 = date - 2, 
-         lag3 = date - 3, 
-         lag4 = date - 4, 
-         lag5 = date - 5) %>% 
+           max(as.numeric(date - min(date)))) %>%
+  ungroup() %>%
+  mutate(airlag1 = NA, airlag2 = NA, airlag3 = NA, airlag4 = NA, airlag5 = NA, 
+         sstlag1 = NA, sstlag2 = NA, sstlag3 = NA, sstlag4 = NA, sstlag5 = NA) 
          # S.Nest = paste(Season, '.', Nest, sep = '')) %>%
-  na.omit()
+
+# add in lags
+for (i in 6:nrow(temps)) {
+  
+  # air temp lags
+  temps$airlag1[i] <- temps$avg_air_temp[i - 1]
+  temps$airlag2[i] <- temps$avg_air_temp[i - 2]
+  temps$airlag3[i] <- temps$avg_air_temp[i - 3]
+  temps$airlag4[i] <- temps$avg_air_temp[i - 4]
+  temps$airlag5[i] <- temps$avg_air_temp[i - 5]
+  
+  # SST lags
+  temps$sstlag1[i] <- temps$avg_sst[i - 1]
+  temps$sstlag2[i] <- temps$avg_sst[i - 2]
+  temps$sstlag3[i] <- temps$avg_sst[i - 3]
+  temps$sstlag4[i] <- temps$avg_sst[i - 4]
+  temps$sstlag5[i] <- temps$avg_sst[i - 5]
+  
+}
+
+# remove rows with NAs 
+temps <- temps %>% na.omit()
 
 # save temps as object for further analysis
 save(temps, 
