@@ -21,14 +21,16 @@ S3 <- read.csv("../data/2021_2022_Nesting_Season_3.csv")              # season 3
 # clean up datasets - only keep columns we want, and add season column
 new_S1 <- S1 %>%
   select(DATA_OCORR, DATA_ECLOS, TIPO_REG, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, 
-         MARCAS_ENC.1, VIVOS, OVOS_TOT, COMP_CASCO, LARG_CASCO, N_NINHO, HIST_NINHO) %>%
+         MARCAS_ENC.1, VIVOS, OVOS_TOT, COMP_CASCO, LARG_CASCO, N_NINHO, 
+         HIST_NINHO, TEMP_LOGGER_ID) %>%
   mutate(Season = 2020, 
          MARCAS_ENC.2 = NA)
 
 new_S2 <- S2 %>%
   dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
   select(DATA_OCORR, DATA_ECLOS, TIPO_REG, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, 
-         MARCAS_ENC.1, VIVOS, OVOS_TOT, COMP_CASCO, LARG_CASCO, N_NINHO, HIST_NINHO) %>%
+         MARCAS_ENC.1, VIVOS, OVOS_TOT, COMP_CASCO, LARG_CASCO, N_NINHO, 
+         HIST_NINHO, TEMP_LOGGER_ID) %>%
   mutate(Season = 2021, 
          MARCAS_ENC.2 = NA)
 
@@ -36,7 +38,7 @@ new_S3 <- S3 %>%
   dplyr::rename("TIPO_REG" = "TIPO_REG..ND...Não.determinado..SD...Sem.Desova..ML...Meia.Lua..CD.com.desova.") %>%
   select(DATA_OCORR, DATA_ECLOS, TIPO_REG, MARCAS_COL, MARCAS_COL.1, MARCAS_ENC, 
          MARCAS_ENC.1, MARCAS_ENC.2, VIVOS, OVOS_TOT, COMP_CASCO, LARG_CASCO, 
-         N_NINHO, HIST_NINHO) %>%
+         N_NINHO, HIST_NINHO, TEMP_LOGGER_ID) %>%
   mutate(Season = 2022)
 
 # put all seasons together
@@ -121,6 +123,8 @@ nests$DATA_ECLOS <- as.POSIXct(nests$DATA_ECLOS, format = "%d-%b-%Y", tz = "")
 nests$Season <- as.factor(nests$Season)
 nests$Female <- as.factor(nests$Female)
 nests$N_NINHO <- as.factor(nests$N_NINHO)
+nests$TEMP_LOGGER_ID <- as.factor(nests$TEMP_LOGGER_ID)
+
 
 # save females object to data
 save(females, file = '../data/females.Rdata')
