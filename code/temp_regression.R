@@ -185,7 +185,7 @@ summary(ARMA_no_lag)
 #   Phi1    Theta1 
 # 0.9160922 0.2162078 
 # Fixed effects:  avg_nest_temp ~ avg_air_temp + avg_sst + incubation.prop 
-# Value Std.Error   DF   t-value p-value
+#                     Value Std.Error   DF   t-value p-value
 # (Intercept)     23.078706  3.862587 5553  5.974934  0.0000
 # avg_air_temp    -0.033569  0.017667 5553 -1.900163  0.0575
 # avg_sst          0.280301  0.133952 5553  2.092554  0.0364
