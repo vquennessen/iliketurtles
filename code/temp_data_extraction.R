@@ -69,6 +69,8 @@ season3 <- read.csv('data/temperature_season_3.csv')
 # put 3 seasons of data together
 nest_temp <- rbind(season1, season2, season3)
 
+nest_temp$Season_Nest <- paste(nest_temp$Season, '_', nest_temp$Nest, sep = '')
+
 ### clean up data
 
 # make time object datetime, and rename as date_time
@@ -89,13 +91,14 @@ nest_temp$Hours <- as.character(nest_temp$Hours)
 # remove duplicated rows in data DF
 weather2 <- weather[-c(7354, 16090, 24994), ]
 
-# make season and nest factor variables
-nest_temp$Nest <- as.factor(nest_temp$Nest)
-nest_temp$Season <- as.factor(nest_temp$Season)
+# make season and nest character variables
+# nest_temp$Nest <- as.factor(nest_temp$Nest)
+# nest_temp$Season <- as.factor(nest_temp$Season)
 
 temps <- nest_temp %>%
   left_join(weather2) %>%
   mutate(date = date(date_time)) %>%
+  na.omit(date) %>%
   group_by(Season, Nest, date) %>%
   summarize(avg_nest_temp = mean(Temperature, na.rm = TRUE), 
             avg_air_temp = mean(temp2m, na.rm = TRUE), 
@@ -106,8 +109,23 @@ temps <- nest_temp %>%
            max(as.numeric(date - min(date)))) %>%
   ungroup() %>%
   mutate(airlag1 = NA, airlag2 = NA, airlag3 = NA, airlag4 = NA, airlag5 = NA, 
-         sstlag1 = NA, sstlag2 = NA, sstlag3 = NA, sstlag4 = NA, sstlag5 = NA) 
-         # S.Nest = paste(Season, '.', Nest, sep = '')) %>%
+         sstlag1 = NA, sstlag2 = NA, sstlag3 = NA, sstlag4 = NA, sstlag5 = NA,
+         Season_Nest = paste(Season, '_', Nest, sep = ''))
+
+# troubleshooting why some had NAs for incubation proportion - some dates as NAs 
+# sub3_13 <- nest_temp %>%
+#   left_join(weather2) %>%
+#   mutate(date = date(date_time)) %>%
+#   na.omit() %>%
+#   group_by(Season, Nest, date) %>%
+#   summarize(avg_nest_temp = mean(Temperature, na.rm = TRUE), 
+#             avg_air_temp = mean(temp2m, na.rm = TRUE), 
+#             avg_sst = mean(SST, na.rm = TRUE)) %>%
+#   ungroup() %>%
+#   group_by(Season, Nest) %>%
+#   filter(Season == 3 & Nest == 13) %>%
+#   mutate(incubation.prop = as.numeric(date - min(date)) /
+#            max(as.numeric(date - min(date))))
 
 # add in lags
 for (i in 6:nrow(temps)) {
@@ -129,7 +147,13 @@ for (i in 6:nrow(temps)) {
 }
 
 # remove rows with NAs 
-temps <- temps %>% na.omit()
+# temps <- temps %>% na.omit()
+
+x <- unique(nest_temp$Season_Nest) # 219 nests total
+y <- unique(temps$Season_Nest)     # 212 nests total
+
+setdiff(x, y)
+# "1_21"  "2_12"  "2_13"  "2_14"  "2_16"  "3_138" "3_212"
 
 # save temps as object for further analysis
 save(temps, 
