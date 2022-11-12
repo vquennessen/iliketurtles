@@ -49,8 +49,8 @@ temp2m <- c(temp2m1 - 273.15, temp2m2 - 273.15)
 SST <- c(SST1 - 273.15, SST2 - 273.15)
 
 # turn time into datetime 
-date_time <- c(as.POSIXct(t1*3600, origin = '1900-01-01 00:00'), 
-               as.POSIXct(t2*3600, origin = '1900-01-01 00:00'))
+date_time <- c(as.POSIXct(t1*3600, origin = '1900-01-01 00:00', tz = "UTC"), 
+               as.POSIXct(t2*3600, origin = '1900-01-01 00:00', tz = "UTC"))
 
 # create dataframe with times, temp2ms, and SSTs
 weather <- data.frame(Hours = as.character(c(t1, t2)), 
@@ -74,7 +74,9 @@ nest_temp$Season_Nest <- paste(nest_temp$Season, '_', nest_temp$Nest, sep = '')
 ### clean up data
 
 # make time object datetime, and rename as date_time
-nest_temp$date_time <- as.POSIXct(nest_temp$Time, format = '%m/%d/%Y  %H:%M')
+nest_temp$date_time <- round(as.POSIXct(nest_temp$Time, 
+                                               format = '%m/%d/%Y  %H:%M'), 
+                                    units = 'hours')
 
 # rename Temperature column to nest
 rename(nest_temp, nest = Temperature)
@@ -82,8 +84,8 @@ rename(nest_temp, nest = Temperature)
 # add hours column as number of hours since jan 1st 1900 00:00
 origin <-  as.POSIXct(mdy_hms('01/01/1900 00:00:00'), 
                       format = '%m/%d/%Y %H:%M:%S')
-nest_temp$Hours <- difftime(nest_temp$date_time, origin, tz ='UTC', 
-                            units = "hours")
+nest_temp$Hours <- round(difftime(nest_temp$date_time, origin, tz ='UTC', 
+                                  units = "hours"))
 nest_temp$Hours <- as.character(nest_temp$Hours)
 
 ##### join dataframes ##########################################################
@@ -95,9 +97,12 @@ weather2 <- weather[-c(7354, 16090, 24994), ]
 # nest_temp$Nest <- as.factor(nest_temp$Nest)
 # nest_temp$Season <- as.factor(nest_temp$Season)
 
+# temporary <- nest_temp %>%
+#   left_join(weather2, by = "Hours")
+
 temps <- nest_temp %>%
-  left_join(weather2) %>%
-  mutate(date = date(date_time)) %>%
+  left_join(weather2, by = 'Hours') %>%
+  mutate(date = date(date_time.y)) %>%
   na.omit(date) %>%
   group_by(Season, Nest, date) %>%
   summarize(avg_nest_temp = mean(Temperature, na.rm = TRUE), 
@@ -152,7 +157,7 @@ for (i in 6:nrow(temps)) {
 x <- unique(nest_temp$Season_Nest) # 219 nests total
 y <- unique(temps$Season_Nest)     # 212 nests total
 
-setdiff(x, y)
+# setdiff(x, y)
 # "1_21"  "2_12"  "2_13"  "2_14"  "2_16"  "3_138" "3_212"
 
 # save temps as object for further analysis
