@@ -31,8 +31,5 @@ temps <- temps %>%
   group_by(Season, Nest) %>%
   mutate(Season_Nest = paste(as.character(Season), '_', as.character(Nest), sep = ''))
 
-unique(temps$Season_Nest)
-s3 <- subset(temps, Season == 2022)
-unique(s3$Nest)
-temps$Season_Nest <- paste(temps$Season, '_', temps$Nest, sep = '')
+
 

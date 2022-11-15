@@ -67,26 +67,27 @@ season2 <- read.csv('data/temperature_season_2.csv')
 season3 <- read.csv('data/temperature_season_3.csv')
 
 # put 3 seasons of data together
-nest_temp <- rbind(season1, season2, season3)
+nest_temps <- rbind(season1, season2, season3)
 
-nest_temp$Season_Nest <- paste(nest_temp$Season, '_', nest_temp$Nest, sep = '')
+nest_temps$Season_Nest <- paste(nest_temps$Season, '_', nest_temps$Nest, sep = '')
 
 ### clean up data
 
 # make time object datetime, and rename as date_time
-nest_temp$date_time <- round(as.POSIXct(nest_temp$Time, 
+nest_temps$Time <- round(as.POSIXct(nest_temps$Time, 
                                                format = '%m/%d/%Y  %H:%M'), 
                                     units = 'hours')
 
 # rename Temperature column to nest
-rename(nest_temp, nest = Temperature)
+nest_temps <- rename(nest_temps, nest_temp = Temperature)
+nest_temps <- rename(nest_temps, date_time = Time)
 
 # add hours column as number of hours since jan 1st 1900 00:00
 origin <-  as.POSIXct(mdy_hms('01/01/1900 00:00:00'), 
                       format = '%m/%d/%Y %H:%M:%S')
-nest_temp$Hours <- round(difftime(nest_temp$date_time, origin, tz ='UTC', 
+nest_temps$Hours <- round(difftime(nest_temps$date_time, origin, tz ='UTC', 
                                   units = "hours"))
-nest_temp$Hours <- as.character(nest_temp$Hours)
+nest_temps$Hours <- as.character(nest_temps$Hours)
 
 ##### join dataframes ##########################################################
 
@@ -100,18 +101,39 @@ weather2 <- weather[-c(7354, 16090, 24994), ]
 # temporary <- nest_temp %>%
 #   left_join(weather2, by = "Hours")
 
-temps <- nest_temp %>%
+temps_days <- nest_temps %>%
   left_join(weather2, by = 'Hours') %>%
   mutate(date = date(date_time.y)) %>%
   na.omit(date) %>%
   group_by(Season, Nest, date) %>%
-  summarize(avg_nest_temp = mean(Temperature, na.rm = TRUE), 
+  summarize(avg_nest_temp = mean(nest_temp, na.rm = TRUE), 
             avg_air_temp = mean(temp2m, na.rm = TRUE), 
             avg_sst = mean(SST, na.rm = TRUE)) %>%
   ungroup() %>%
   group_by(Season, Nest) %>%
   mutate(incubation.prop = as.numeric(date - min(date)) /
            max(as.numeric(date - min(date)))) %>%
+  ungroup() %>%
+  mutate(airlag1 = NA, airlag2 = NA, airlag3 = NA, airlag4 = NA, airlag5 = NA, 
+         sstlag1 = NA, sstlag2 = NA, sstlag3 = NA, sstlag4 = NA, sstlag5 = NA,
+         Season_Nest = paste(Season, '_', Nest, sep = ''))
+
+# why are date_time.x and date_time.y different?
+xx <- temps_days$date_time.x
+yy <- temps_days$date_time.y
+setdiff(xx, yy)
+
+temps_hours <- nest_temp %>%
+  left_join(weather2, by = 'Hours') %>%
+  na.omit(date_time.y) %>%
+  group_by(Season, Nest) %>%
+  summarize(avg_nest_temp = mean(nest_temp, na.rm = TRUE), 
+            avg_air_temp = mean(temp2m, na.rm = TRUE), 
+            avg_sst = mean(SST, na.rm = TRUE)) %>%
+  ungroup() %>%
+  group_by(Season, Nest) %>%
+  mutate(incubation.prop = as.numeric(date_time.y - min(date_time.y)) /
+           max(as.numeric(date_time.y - min(date_time.y)))) %>%
   ungroup() %>%
   mutate(airlag1 = NA, airlag2 = NA, airlag3 = NA, airlag4 = NA, airlag5 = NA, 
          sstlag1 = NA, sstlag2 = NA, sstlag3 = NA, sstlag4 = NA, sstlag5 = NA,
@@ -136,18 +158,18 @@ temps <- nest_temp %>%
 for (i in 6:nrow(temps)) {
   
   # air temp lags
-  temps$airlag1[i] <- temps$avg_air_temp[i - 1]
-  temps$airlag2[i] <- temps$avg_air_temp[i - 2]
-  temps$airlag3[i] <- temps$avg_air_temp[i - 3]
-  temps$airlag4[i] <- temps$avg_air_temp[i - 4]
-  temps$airlag5[i] <- temps$avg_air_temp[i - 5]
+  temps_days$airlag1[i] <- temps_days$avg_air_temp[i - 1]
+  temps_days$airlag2[i] <- temps_days$avg_air_temp[i - 2]
+  temps_days$airlag3[i] <- temps_days$avg_air_temp[i - 3]
+  temps_days$airlag4[i] <- temps_days$avg_air_temp[i - 4]
+  temps_days$airlag5[i] <- temps_days$avg_air_temp[i - 5]
   
   # SST lags
-  temps$sstlag1[i] <- temps$avg_sst[i - 1]
-  temps$sstlag2[i] <- temps$avg_sst[i - 2]
-  temps$sstlag3[i] <- temps$avg_sst[i - 3]
-  temps$sstlag4[i] <- temps$avg_sst[i - 4]
-  temps$sstlag5[i] <- temps$avg_sst[i - 5]
+  temps_days$sstlag1[i] <- temps_days$avg_sst[i - 1]
+  temps_days$sstlag2[i] <- temps_days$avg_sst[i - 2]
+  temps_days$sstlag3[i] <- temps_days$avg_sst[i - 3]
+  temps_days$sstlag4[i] <- temps_days$avg_sst[i - 4]
+  temps_days$sstlag5[i] <- temps_days$avg_sst[i - 5]
   
 }
 
