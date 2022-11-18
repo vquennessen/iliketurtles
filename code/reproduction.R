@@ -8,7 +8,7 @@ reproduction <- function(n_breeding_M, n_breeding_F, beta,
   # extract breeding adults from N
   
   # proportion of males
-  prop_males <- n_breeding_M / (n_breeding_M + n_breeding_F)
+  prop_males <- 2*(n_breeding_M / (n_breeding_M + n_breeding_F))
   
   # relate prop_males to breeding success via mating function
   breeding_success <- pbeta(prop_malcalculatees, shape1 = 1, shape2 = beta)
