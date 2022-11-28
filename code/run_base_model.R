@@ -15,7 +15,7 @@ run_base_model <- function(num_sims, scenario, beta) {
   M_survival_years <- c(1, 2, 7, 12, 1)                 # years per stage - M
   M_survival_values <- c(0.35, 0.8, 0.85, 0.85, 0.799)  # survival per stage - M
   age_maturity <- 23                                    # age at first reproduction
-  remigration_int <- 4                                  # remigration interval
+  remigration_int <- 5.557                              # remigration interval
   nests_mu <- 4.94209                                   # mean number of nests per female per season
   nests_sd <- 1.94                                      # sd of number of nests per female per season
   eggs_mu <- 102.4625                                   # mean number of eggs per nest
