@@ -10,13 +10,10 @@ source('initialize_arrays.R')
 source('initialize_population2.R')
 source('reproduction.R')
 
-
-# num_sims = 10
-# scenario = 'SSP1-1.9'
-# beta = 1
-
+# model parameters
 num_sims <- c(10000)
-betas <- c(3, 4)
+betas <- c(1, 2, 3, 5, 10, 20, 50, 100)
+# betas <- c(20, 50, 100)
 scenarios <- c('SSP1-1.9', 'SSP1-2.6', 'SSP2-4.5', 'SSP3-7.0', 'SSP5-8.5')
 
 for (ns in 1:length(num_sims)) {
