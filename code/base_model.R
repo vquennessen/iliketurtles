@@ -28,7 +28,6 @@ base_model <- function(max_age, F_survival_years, F_survival_values,
   m_Leslie <- init_output[[8]]       # male Leslie matrix
   
   ##### model ##################################################################
-  
   for (y in 2:Y) {
     
     # population dynamics
@@ -40,32 +39,26 @@ base_model <- function(max_age, F_survival_years, F_survival_values,
     # annual survival - males
     N[2, , y] <- floor(m_Leslie %*% N[2, , y - 1])
     
+    # break out of loop if there are zero males or females at any age
+    if (sum(N[1, , y]) < 1 || sum(N[2, , y]) < 1) { break }
+    
     # climate change temperature estimates
     temp <- temperatures[y]
     
-    # calculate number of breeding adults
-    # females only breed every remigration_int years
-    n_breeding_F <- sum(N[1, age_maturity:max_age, y - 1], 
-                        na.rm = TRUE) / remigration_int
-    
-    # males mate every year???
-    n_breeding_M <- sum(N[2, age_maturity:max_age, y - 1], na.rm = TRUE)
-    
-    # break out of loop if there aren't enough breeding adults
-    if (n_breeding_F < 1 || n_breeding_M < 1) { break }
-    
     # reproduction
-    rep_output <- reproduction(n_breeding_M, n_breeding_F, beta,
-                               nests_mu, nests_sd, eggs_mu, eggs_sd, 
+    rep_output <- reproduction(N, age_maturity, max_age, remigration_int, 
+                               beta, nests_mu, nests_sd, eggs_mu, eggs_sd, 
                                hatch_success = hatch_success[y], 
                                climate_stochasticity, temp, temp_sd, 
-                               logit_a, logit_b, N, y)
+                               logit_a, logit_b, y)
     
     # add recruits to population size array
     N[1, 1, y] <- rep_output[[1]]
     N[2, 1, y] <- rep_output[[2]]
-    
+
   }
+    
+  #}
   
   ##### output #################################################################
   
