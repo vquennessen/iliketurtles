@@ -1,0 +1,229 @@
+---
+title: "Power Analysis"
+subtitle: "Confidence in BSR Estimates"
+author: "Vic Quennessen"
+date: "February 22, 2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+# load libraries
+library(ggplot2)
+library(viridis)
+library(tidyverse)
+library(data.table)
+library(raster)
+library(igraph)
+library(rgeos)
+library(gridExtra)
+
+# set number of simulations to run
+n_sims <- 100000
+```
+
+## Question 1: How many hatchlings should be sampled from a nest to robustly estimate the number of males that contributed to it?
+
+\textbf{Methods:}
+
+For each number of males females could mate with,
+
+And for each number of hatchlings sampled from each nest (100 total),
+
+100,000 simulations were run. 
+
+.
+
+\textbf{Assumption:} mating is random (any male can mate with any female)
+
+.
+
+For each nest, males could fertilize eggs in different ways:
+
+1. Random fertilization: each egg could be fertilized by any male
+
+2. Exponential fertilization: the first male fertilizes 1/2 the eggs, the next male 1/4, the next 1/8, etc.
+
+3. Dominant fertilization: the first male fertilizes 90%, 70%, or 50% of the eggs, and the rest of the males fertilize fewer eggs
+
+4. Flexible dominant fertilization: based on green turtle data from Tortuguero National Park in Costa Rica (Alfaro-Nunez et al. 2015), the proportion contributed by each sire depends on the total number of sires, and is overall dominated by 1-2 males in each case. 
+
+.
+
+\textbf{For each simulation:}
+
+.    For each number of males:
+
+.    .    For each sample size of hatchlings:
+
+.    .    .    For each of 100 eggs in the nest:
+
+.    .    .    .    Assign sires with probabilities based on the fertilization mode
+
+.    .    Sample the nest and determine if all the sires have been identified
+
+
+\newpage
+
+### Assuming random fertilization
+```{r, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100, 
+                     max_hatchlings = 96, 
+                     max_males = 7,
+                     breeding = 'random', 
+                     n_sims = n_sims, 
+                     dom = NULL, 
+                     n_sizes = c(32, 96))
+```
+\newpage
+
+### Assuming exponential decay in fertilization (1/2, 1/4, 1/8, etc.)
+```{r, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100,
+                     max_hatchlings = 96,
+                     max_males = 7,
+                     breeding = 'exponential',
+                     n_sims = n_sims, 
+                     dom = NULL, 
+                     n_sizes = c(32, 96))
+```
+
+\newpage
+
+### Assuming one dominant sire that fertilizes 90% of eggs
+```{r, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100, 
+                     max_hatchlings = 96, 
+                     max_males = 7, 
+                     breeding = 'dominant', 
+                     n_sims = n_sims, 
+                     dom = 0.9, 
+                     n_sizes = c(32, 96))
+```
+
+\newpage
+
+### Assuming one dominant sire that fertilizes 70% of eggs
+```{r, fig.height = 4, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100, 
+                     max_hatchlings = 96, 
+                     max_males = 7, 
+                     breeding = 'dominant', 
+                     n_sims = n_sims, 
+                     dom = 0.7, 
+                     n_sizes = c(32, 96))
+```
+
+\newpage
+
+### Assuming one dominant sire that fertilizes 50% of eggs
+```{r, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100, 
+                     max_hatchlings = 96, 
+                     max_males = 7, 
+                     breeding = 'dominant', 
+                     n_sims = n_sims, 
+                     dom = 0.5, 
+                     n_sizes = c(32, 96))
+```
+
+\newpage
+
+### Assuming one dominant sire where fertilization is flexible, and dependent on the total number of sires
+
+#### Proportion fertilized by each sire is calculated as the average contribution for each sire based on Alfaro-Nunez et al. 2015:
+
+![Figure 1 (Alfaro-Nunez et al. 2015)](C:/Users/Vic/Documents/Projects/iliketurtles/figures/alfaro_nunez_2015_figure1.PNG)
+
+
+
+```{r, echo = FALSE, warning = FALSE}
+contribution <- data.frame(Sire1 = c(1, 0.8868, 0.4744, 0.5485, 0.4744), 
+                           Sire2 = c(0, 0.1132, 0.3241, 0.2508, 0.1982), 
+                           Sire3 = c(0, 0, 0.2015, 0.1509, 0.1523), 
+                           Sire4 = c(0, 0, 0, 0.0499, 0.0997), 
+                           Sire5 = c(0, 0, 0, 0, 0.0755))
+
+row.names(contribution) <- c('1 Sire', 
+                             '2 Sires', 
+                             '3 Sires', 
+                             '4 Sires', 
+                             '5 Sires')
+contribution
+```
+\newpage
+
+```{r, warning = FALSE}
+source('hatchlings_to_sample.R')
+
+hatchlings_to_sample(n_hatchlings = 100, 
+                     max_hatchlings = 96, 
+                     max_males = 5, 
+                     breeding = 'flexible_dominant', 
+                     n_sims = n_sims, 
+                     dom = NULL, 
+                     n_sizes = c(32, 96))
+```
+
+<!-- \newpage -->
+
+<!-- Question 2: How many females and nests should be sampled to get a robust estimate of the number of breeding males, and therefore the breeding sex ratio? -->
+
+<!-- ### assuming random fertilization -->
+<!-- ```{r, fig.height = 2.25, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
+
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'random', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
+
+<!-- \newpage -->
+
+<!-- ### assuming exponential decay in fertilization (1 nest, 1/2, 1/4, 1/8, etc.) -->
+<!-- ```{r, fig.height = 2.5, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
+
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'exponential', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
+
+<!-- \newpage -->
+
+<!-- ### assuming one dominant sire -->
+<!-- ```{r, fig.height = 2.5, warning = FALSE} -->
+<!-- source('sample_all_nests.R') -->
+
+<!-- sample_all_nests(max_n_males = 7, -->
+<!--                  max_n_females = 10,  -->
+<!--                  minF = 10,  -->
+<!--                  minM = 10,  -->
+<!--                  maxF = 60,  -->
+<!--                  maxM = 60,  -->
+<!--                  breeding = 'dominant', -->
+<!--                  nsims = n_sims) -->
+<!-- ``` -->
