@@ -1,0 +1,33 @@
+File data/adaptor.mars.internal-1665013288.9338732-20330-9-4f7bf825-ebce-4709-9351-a14d16742749.nc (NC_FORMAT_64BIT):
+
+     2 variables (excluding dimension variables):
+        short t2m[longitude,latitude,time]   
+            scale_factor: 6.52328192475547e-05
+            add_offset: 299.53170566484
+            _FillValue: -32767
+            missing_value: -32767
+            units: K
+            long_name: 2 metre temperature
+        short sst[longitude,latitude,time]   
+            scale_factor: 3.37824788656097e-05
+            add_offset: 301.100813186886
+            _FillValue: -32767
+            missing_value: -32767
+            units: K
+            long_name: Sea surface temperature
+
+     3 dimensions:
+        longitude  Size:1 
+            units: degrees_east
+            long_name: longitude
+        latitude  Size:1 
+            units: degrees_north
+            long_name: latitude
+        time  Size:5088 
+            units: hours since 1900-01-01 00:00:00.0
+            long_name: time
+            calendar: gregorian
+
+    2 global attributes:
+        Conventions: CF-1.6
+        history: 2022-10-05 23:41:52 GMT by grib_to_netcdf-2.25.1: /opt/ecmwf/mars-client/bin/grib_to_netcdf.bin -S param -o /cache/data2/adaptor.mars.internal-1665013288.9338732-20330-9-4f7bf825-ebce-4709-9351-a14d16742749.nc /cache/tmp/4f7bf825-ebce-4709-9351-a14d16742749-adaptor.mars.internal-1665013021.0355453-20330-15-tmp.grib
